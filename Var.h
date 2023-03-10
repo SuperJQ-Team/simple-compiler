@@ -1,11 +1,12 @@
 #pragma once
 #include "Parser.h"
+#include "UI.h"
 
 namespace __Executer {
 	class Executer;
 }
 
-namespace __Varible {
+namespace __Variable {
 	enum Type
 	{
 		_error = -1,
@@ -17,28 +18,29 @@ namespace __Varible {
 		_definelog = 5,
 		_varible = 6
 	};
-
-	class Varible
-	{
-	public:
-
-		void* _val = nullptr;
-		Type _type = _null;
-		inline ~Varible() { if (_val != nullptr)delete _val; }
-
-		Varible();
-		Varible(Type type);
-		Varible(const __Parser::Token& token);
-		Varible(const Varible& var);
-
-		Varible operator= (const Varible& var);
-
-		void set(const __Parser::Token& token);
-		void output(std::ostream& os, __Executer::Executer&);
-
-		static Varible err;
-		static Varible nul;
-		static Varible deflog(const std::string&);
-	};
 }
 
+class Variable
+{
+public:
+
+	void* _val = nullptr;
+	__Variable::Type _type = __Variable::_null;
+	inline ~Variable() { if (_val != nullptr)delete _val; }
+
+	Variable();
+	Variable(__Variable::Type type);
+	Variable(const Token& token);
+	Variable(const Variable& var);
+
+	Variable operator= (const Variable& var);
+
+	void set(const Token& token);
+	void output(std::ostream& os, __Executer::Executer&);
+
+	static Variable err;
+	static Variable nul;
+	static Variable deflog(const std::string&);
+
+	static friend void UI::Print(const Variable& var);
+};

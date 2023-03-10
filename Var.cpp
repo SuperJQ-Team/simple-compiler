@@ -2,27 +2,29 @@
 #include "Matrix.h"
 #include "Executer.h"
 
-__Varible::Varible __Varible::Varible::err(__Varible::_error);
-__Varible::Varible __Varible::Varible::nul(__Varible::_null);
+using namespace __Variable;
 
-__Varible::Varible::Varible()
+Variable Variable::err(_error);
+Variable Variable::nul(_null);
+
+Variable::Variable()
 {
-	_type = _null;
+	_type =  _null;
 	_val = nullptr;
 }
 
-__Varible::Varible::Varible(Type type) :_type(type)
+Variable::Variable(Type type) :_type(type)
 {
 	if (type == _null || type == _error)
 		_val = nullptr;
 }
 
-__Varible::Varible::Varible(const __Parser::Token& token)
+Variable::Variable(const Token& token)
 {
 	set(token);
 }
 
-__Varible::Varible::Varible(const Varible& var)
+Variable::Variable(const Variable& var)
 {
 	_type = var._type;
 	if (_type == _null)
@@ -37,7 +39,7 @@ __Varible::Varible::Varible(const Varible& var)
 		_val = new Matrix(*(Matrix*)(var._val));
 }
 
-__Varible::Varible __Varible::Varible::operator=(const Varible& var)
+Variable Variable::operator=(const Variable& var)
 {
 	_type = var._type;
 	if (_type == _null)
@@ -54,7 +56,7 @@ __Varible::Varible __Varible::Varible::operator=(const Varible& var)
 	return *this;
 }
 
-void __Varible::Varible::set(const __Parser::Token& token)
+void Variable::set(const Token& token)
 {
 	if (token.type == __Parser::number)
 	{
@@ -71,7 +73,7 @@ void __Varible::Varible::set(const __Parser::Token& token)
 				if (!ifd)ifd = true;
 				else
 				{
-					*this = Varible::err;
+					*this = Variable::err;
 					return;
 				}
 		}
@@ -109,32 +111,32 @@ void __Varible::Varible::set(const __Parser::Token& token)
 }
 
 
-void __Varible::Varible::output(std::ostream& os, __Executer::Executer& ex)
+void Variable::output(std::ostream& os, __Executer::Executer& ex)
 {
 	switch (_type)
 	{
-	case __Varible::_error:
+	case _error:
 		os << "Error!";
 		break;
-	case __Varible::_null:
+	case _null:
 		os << "null";
 		break;
-	case __Varible::_int:
+	case _int:
 		os << *(int*)_val;
 		break;
-	case __Varible::_float:
+	case _float:
 		os << *(double*)_val;
 		break;
-	case __Varible::_string:
+	case _string:
 		os << *(std::string*)_val;
 		break;
-	case __Varible::_matrix:
+	case _matrix:
 		(*(Matrix*)_val);
 		break;
-	case __Varible::_definelog:
+	case _definelog:
 		os << "varible " << *(std::string*)_val << " has been creat";
 		break;
-	case __Varible::_varible:
+	case _varible:
 		os << "varible " << *(std::string*)_val << " = "; ex.GetValue(*(std::string*)this->_val).output(os, ex);
 		break;
 	default:
@@ -142,10 +144,10 @@ void __Varible::Varible::output(std::ostream& os, __Executer::Executer& ex)
 	}
 }
 
-__Varible::Varible __Varible::Varible::deflog(const std::string& s)
+Variable Variable::deflog(const std::string& s)
 {
-	auto v = Varible();
-	v._type = __Varible::_definelog;
+	auto v = Variable();
+	v._type = _definelog;
 	v._val = new std::string(s);
 	return v;
 }

@@ -18,28 +18,27 @@ inline bool isvol(const std::string s)
 	return s == "=" || s == "+=" || s == "-=" || s == "*=" || s == "/=" || s == "%=" || s == "&=" || s == "|=" || s == "^=";
 }
 
-namespace __Executer {
 
-	Varible Executer::RunOption(const Varible& _v1, const Varible& _v2, const std::string& opt)
+	Variable Executer::RunOption(const Variable& _v1, const Variable& _v2, const std::string& opt)
 	{
-		Varible v1 = _v1, v2 = _v2;
+		Variable v1 = _v1, v2 = _v2;
 		if (isvol(opt))
 		{
-			if (v1._type != __Varible::_varible) return Varible::err;
-			if (v2._type == __Varible::_varible) v2 = GetValue(*(std::string*)(v2._val));
+			if (v1._type != __Variable::_varible) return Variable::err;
+			if (v2._type == __Variable::_varible) v2 = GetValue(*(std::string*)(v2._val));
 			if (opt == "=")GetValue(*(std::string*)(v1._val)) = v2;
 			else
 			{
-				return Varible::err;
+				return Variable::err;
 			}
 			return _v1;
 		}
-		Varible v;
-		if (v1._type == __Varible::_varible) v1 = GetValue(*(std::string*)(v1._val));
-		if (v2._type == __Varible::_varible) v2 = GetValue(*(std::string*)(v2._val));
-		if (v1._type == __Varible::_int && v2._type == __Varible::_int)
+		Variable v;
+		if (v1._type == __Variable::_varible) v1 = GetValue(*(std::string*)(v1._val));
+		if (v2._type == __Variable::_varible) v2 = GetValue(*(std::string*)(v2._val));
+		if (v1._type == __Variable::_int && v2._type == __Variable::_int)
 		{
-			v._type = __Varible::_int;
+			v._type = __Variable::_int;
 			v._val = new int;
 			if (opt == "+")*(int*)v._val = *(int*)v1._val + *(int*)v2._val;
 			else if (opt == "-")*(int*)v._val = *(int*)v1._val - *(int*)v2._val;
@@ -48,28 +47,28 @@ namespace __Executer {
 			else if (opt == "%")*(int*)v._val = *(int*)v1._val % *(int*)v2._val;
 			else
 			{
-				v._type = __Varible::_error;
+				v._type = __Variable::_error;
 				delete v._val;
 				v._val = nullptr;
 			}
 		}
 		else
 		{
-			v._type = __Varible::_error;
+			v._type = __Variable::_error;
 			v._val = nullptr;
 		}
 		return v;
 	}
 
-	Varible& Executer::GetValue(const std::string& s)
+	Variable& Executer::GetValue(const std::string& s)
 	{
-		if (var_map.count(s))
+		if (var_map.find(s) != var_map.end())
 			return var_map[s];
 		else if (father != nullptr)return father->GetValue(s);
-		else return Varible::err;
+		else return Variable::err;
 	}
 
-	Varible Executer::Execute(const std::vector<Token>& tokenstream)
+	Variable Executer::Execute(const std::vector<Token>& tokenstream)
 	{
 		bool indefine = false;
 		if (tokenstream.size() >= 2)
@@ -78,11 +77,11 @@ namespace __Executer {
 				if (tokenstream[1].type == __Parser::variable)
 					indefine = true;
 				else
-					return Varible::err;
+					return Variable::err;
 				if (tokenstream.size() >= 4)
-					if (tokenstream[2].type != __Parser::option || tokenstream[2].value != "=")return Varible::err;
+					if (tokenstream[2].type != __Parser::option || tokenstream[2].value != "=")return Variable::err;
 
-				var_map[tokenstream[1].value] = Varible();
+				var_map[tokenstream[1].value] = Variable();
 			}
 		std::stack<Token> opts;
 		std::vector<Token> backtokens;
@@ -99,7 +98,7 @@ namespace __Executer {
 						backtokens.emplace_back(opts.top());
 						opts.pop();
 					}
-					if (opts.empty())return Varible::err;//ERROR;
+					if (opts.empty())return Variable::err;//ERROR;
 					opts.pop();
 				}
 				else
@@ -123,14 +122,14 @@ namespace __Executer {
 		while (!opts.empty()) { backtokens.emplace_back(opts.top()); opts.pop(); };
 
 
-		std::stack<Varible> vars;
+		std::stack<Variable> vars;
 		it = backtokens.begin();
 		while (it != backtokens.end())
 		{
 			if (it->type == __Parser::option)
 			{
-				if (vars.size() < 2)return Varible::err;//ERROR;
-				Varible v1, v2;
+				if (vars.size() < 2)return Variable::err;//ERROR;
+				Variable v1, v2;
 				v2 = vars.top(); vars.pop();
 				v1 = vars.top(); vars.pop();
 				//std::cerr << "Is executing operator " << it->value << " \n";
@@ -138,12 +137,11 @@ namespace __Executer {
 			}
 			else
 			{
-				Varible v(*it);
+				Variable v(*it);
 				vars.push(v);
 			}
 			++it;
 		}
-		if (indefine) return Varible::deflog(tokenstream[1].value);
+		if (indefine) return Variable::deflog(tokenstream[1].value);
 		return vars.top();
 	}
-}

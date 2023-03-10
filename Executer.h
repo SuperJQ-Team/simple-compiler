@@ -4,21 +4,12 @@
 #include "Var.h"
 #include "Parser.h"
 
-namespace __Executer {
-
-	using __Parser::Token;
-	using __Parser::Parser;
-	using __Varible::Varible;
-	using __Parser::OptionType;
-
-
-	class Executer
-	{
-		Executer* father = nullptr;
-		std::map<std::string, Varible> var_map;
-	public:
-		Varible RunOption(const Varible& v1, const Varible& v2, const std::string& opt);
-		Varible& GetValue(const std::string&);
-		Varible Execute(const std::vector<Token>& tokens);
-	};
-}
+class Executer
+{
+	Executer* father = nullptr;
+	std::map<std::string, Variable> var_map;
+public:
+	Variable RunOption(const Varible& v1, const Varible& v2, const std::string& opt);
+	Variable& GetValue(const std::string&);
+	Variable Execute(const std::vector<Token>& tokens);
+};

@@ -1,6 +1,8 @@
 #include "Parser.h"
 #include "Logger.h"
 
+using namespace __Parser;
+
 char sign[] = { '+','-','*','/','%','<','>','=','(',')','[',']','{','}',
 						'!','@','#','$','^','&','~','?',':',';','\'','"','\\','|' };
 
@@ -42,16 +44,35 @@ bool isDefineSign(const std::string& last_sign, char c)
 	return false;
 }
 
-__Parser::OptionType GetOptType(std::string c)
+OptionType GetOptType(std::string c)
 {
-	if (c == "+") return __Parser::plus;
-	if (c == "-") return __Parser::minus;
-	if (c == "*") return __Parser::times;
-	if (c == "/") return __Parser::division;
-	if (c == "%") return __Parser::modulo;
-	if (c == "(") return __Parser::left_brack;
-	if (c == ")") return __Parser::right_brack;
-	return __Parser::error_option;
+	if (c == "+") return plus;
+	if (c == "-") return minus;
+	if (c == "*") return times;
+	if (c == "/") return division;
+	if (c == "%") return modulo;
+
+	if (c == "(") return left_brack;
+	if (c == ")") return right_brack;
+
+	if (c == "&") return bitands;
+	if (c == "|") return bitors;
+	if (c == "^") return xors;
+	if (c == "~") return bitnot;
+	if (c == ">>") return right_move;
+	if (c == "<<") return left_move;
+
+	if (c == "=") return is;
+	if (c == "+=") return plusis;
+	if (c == "-=") return minusis;
+	if (c == "*=") return timesis;
+	if (c == "/=") return divisionis;
+	if (c == "%=") return modulois;
+	if (c == "&=") return andis;
+	if (c == "|=") return right_brack;
+	if (c == "^=") return right_brack;
+	if (c == "~=") return right_brack;
+	return error_option;
 }
 
 class Automaton
@@ -90,7 +111,7 @@ class Automaton
 
 public:
 	Automaton(const std::string& str);
-	__Parser::Token ParseToken();
+	Token ParseToken();
 	bool parse_end;
 };
 Automaton::Automaton(const std::string& str)
@@ -99,23 +120,23 @@ Automaton::Automaton(const std::string& str)
 	this->it = this->str.begin();
 	parse_end = false;
 }
-__Parser::Token Automaton::ParseToken()
+Token Automaton::ParseToken()
 {
 	char str_sign = '\0';
 	char last_sign = '\0';
 	int left_bracks_num = 0;
 	state = START;
-	__Parser::Token token;
+	Token token;
 	while (it != str.end())
 	{
 		if (isdigit(*it) || *it == '.')
 		{
-			if (state == START || state == SPACE) token.type = __Parser::number;
+			if (state == START || state == SPACE) token.type = number;
 			state = state_trans[state][NUMBER];
 		}
 		else if (*it == '{' || *it == '}')
 		{
-			if (state == START || state == SPACE) token.type = __Parser::matrix;
+			if (state == START || state == SPACE) token.type = matrix;
 			if (*it == '{') ++left_bracks_num;
 			else if (*it == '}')
 			{
@@ -128,7 +149,7 @@ __Parser::Token Automaton::ParseToken()
 		{
 			if (state == START || state == SPACE)
 			{
-				token.type = __Parser::string;
+				token.type = string;
 				str_sign = *it;
 			}
 			if (*it != str_sign)
@@ -141,15 +162,15 @@ __Parser::Token Automaton::ParseToken()
 		{
 			if (isoperation(token.value, *it))
 			{
-				if (state == START || state == SPACE) token.type = __Parser::option;
+				if (state == START || state == SPACE) token.type = option;
 				state = OPTION;
 			}
 			else
 			{
-				if (state == START || state == SPACE) token.type = __Parser::option;
-				if (*it == '(' && state == VARIABLE && token.type == __Parser::variable)
+				if (state == START || state == SPACE) token.type = option;
+				if (*it == '(' && state == VARIABLE && token.type == variable)
 				{
-					token.type = __Parser::function;
+					token.type = function;
 					it++;
 				}
 				if ((*it == '(' && state == OPTION) || last_sign == ')')state = END;
@@ -160,12 +181,12 @@ __Parser::Token Automaton::ParseToken()
 		{
 			if (isDefineSign(token.value, *it))
 			{
-				if (state == START || state == SPACE) token.type = __Parser::define;
+				if (state == START || state == SPACE) token.type = define;
 				state = state_trans[state][DEFINE];
 			}
 			else
 			{
-				if (state == START || state == SPACE || state == DEFINE) token.type = __Parser::variable;
+				if (state == START || state == SPACE || state == DEFINE) token.type = variable;
 				state = state_trans[state][VARIABLE];
 			}
 		}
@@ -176,7 +197,7 @@ __Parser::Token Automaton::ParseToken()
 
 		if (state == ERROR)
 		{
-			token.type = __Parser::error;
+			token.type = error;
 			return token;
 		}
 
@@ -189,12 +210,11 @@ __Parser::Token Automaton::ParseToken()
 		++it;
 	}
 	if (it == str.end()) parse_end = true;
-	if (left_bracks_num != 0) token.type = __Parser::error;
+	if (left_bracks_num != 0) token.type = error;
 	return token;
 }
 
 
-namespace __Parser {
 	std::vector<Token> Parser::getTokens(const std::string& input_string)
 	{
 		std::vector<Token> tokens;
@@ -225,4 +245,3 @@ namespace __Parser {
 			std::cout << getType(token.type) << ", " << token.value << '\n';
 		}
 	}
-}
