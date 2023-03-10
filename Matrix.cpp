@@ -5,18 +5,18 @@
 
 Matrix::Matrix(int row, int col) : is_valid(true), row(row), col(col)
 {
-	buffer = new int[row * col];
-	memset(buffer, 0, sizeof(int) * row * col);
+	buffer = new double[row * col];
+	memset(buffer, 0, sizeof(double) * row * col);
 }
 
-Matrix::Matrix(const Matrix& m) :col(m.col), row(m.row)
+Matrix::Matrix(const Matrix& m) :col(m.col), row(m.row), is_valid(true)
 {
-	buffer = new int[col * row];
+	buffer = new double[col * row];
 	for (int i = 0; i < col * row; ++i)
 		buffer[i] = m.buffer[i];
 }
 
-Matrix::Matrix(const std::string& token)
+Matrix::Matrix(const std::string& token) : row(0), col(0), buffer(nullptr)
 {
 	is_valid = true;
 	int left_brack_num = 0;
@@ -73,8 +73,8 @@ Matrix::Matrix(const std::string& token)
 	}
 	++row;
 	++col;
-	buffer = new int[row * col];
-	memset(buffer, 0, sizeof(int) * row * col);
+	buffer = new double[row * col];
+	memset(buffer, 0, sizeof(double) * row * col);
 
 	int row_num = 0;
 	now_digit = 0;
@@ -117,4 +117,35 @@ Matrix::Matrix(const std::string& token)
 		else now_digit = now_digit * 10 + token[i] - '0';
 		if (left_brack_num == 0) break;
 	}
+}
+
+Matrix operator * (const Matrix& ma, const Matrix& mb)
+{
+	if (ma.col != mb.row)
+	{
+		Matrix result(1, 1);
+		result.is_valid = false;
+		return result;
+	}
+	Matrix result(ma.row, mb.col);
+	for (int i = 0; i < ma.row; ++i)
+	{
+		for (int j = 0; j < mb.col; ++j)
+		{
+			for (int k = 0; k < ma.col; ++k)
+			{
+				result.buffer[i * mb.col + j] += ma.buffer[i * ma.col + k] * mb.buffer[k * mb.col + j];
+			}
+		}
+	}
+	return result;
+}
+Matrix operator * (double k, const Matrix& m)
+{
+	Matrix result = m;
+	for (int i = 0; i < result.row * result.col; ++i)
+	{
+		result.buffer[i] *= k;
+	}
+	return result;
 }

@@ -1,5 +1,6 @@
 #include "Executer.h"
 #include "Logger.h"
+#include "UI.h"
 #include <stack>
 
 int GetPriority(const std::string& opt)
@@ -18,130 +19,184 @@ inline bool isvol(const std::string s)
 	return s == "=" || s == "+=" || s == "-=" || s == "*=" || s == "/=" || s == "%=" || s == "&=" || s == "|=" || s == "^=";
 }
 
-
-	Variable Executer::RunOption(const Variable& _v1, const Variable& _v2, const std::string& opt)
+Variable Executer::Calculate(const std::vector<Token>& tokens, int index)
+{
+	std::stack<Token> opts;
+	std::vector<Token> backtokens;
+	for (; index < tokens.size(); ++index)
 	{
-		Variable v1 = _v1, v2 = _v2;
-		if (isvol(opt))
+		if (tokens[index].type == __Parser::option)
 		{
-			if (v1._type != __Variable::_varible) return Variable::err;
-			if (v2._type == __Variable::_varible) v2 = GetValue(*(std::string*)(v2._val));
-			if (opt == "=")GetValue(*(std::string*)(v1._val)) = v2;
-			else
+			if (tokens[index].value == ")")
 			{
-				return Variable::err;
+				while (!opts.empty() && opts.top().value != "(")
+				{
+					backtokens.emplace_back(opts.top());
+					opts.pop();
+				}
+				if (opts.empty())return Variable::err;//ERROR;
+				opts.pop();
 			}
-			return _v1;
-		}
-		Variable v;
-		if (v1._type == __Variable::_varible) v1 = GetValue(*(std::string*)(v1._val));
-		if (v2._type == __Variable::_varible) v2 = GetValue(*(std::string*)(v2._val));
-		if (v1._type == __Variable::_int && v2._type == __Variable::_int)
-		{
-			v._type = __Variable::_int;
-			v._val = new int;
-			if (opt == "+")*(int*)v._val = *(int*)v1._val + *(int*)v2._val;
-			else if (opt == "-")*(int*)v._val = *(int*)v1._val - *(int*)v2._val;
-			else if (opt == "*")*(int*)v._val = *(int*)v1._val * *(int*)v2._val;
-			else if (opt == "/")*(int*)v._val = *(int*)v1._val / *(int*)v2._val;
-			else if (opt == "%")*(int*)v._val = *(int*)v1._val % *(int*)v2._val;
 			else
 			{
-				v._type = __Variable::_error;
-				delete v._val;
-				v._val = nullptr;
+				//std::cerr << "Push operator " << it->value << " \n";
+				while (!opts.empty() && opts.top().value != "(" && GetPriority(opts.top().value) >= GetPriority(tokens[index].value))
+				{
+					//std::cerr << "Pop operator " << opts.top().value << " \n";
+					backtokens.emplace_back(opts.top());
+					opts.pop();
+				}
+				opts.push(tokens[index]);
 			}
 		}
 		else
 		{
+			backtokens.emplace_back(tokens[index]);
+		}
+	}
+	while (!opts.empty()) { backtokens.emplace_back(opts.top()); opts.pop(); };
+
+
+	std::stack<Variable> vars;
+	for (auto it = backtokens.begin(); it != backtokens.end(); ++it)
+	{
+		if (it->type == __Parser::option)
+		{
+			if (vars.size() < 2)return Variable::err;//ERROR;
+			Variable v1, v2;
+			v2 = vars.top(); vars.pop();
+			v1 = vars.top(); vars.pop();
+			//std::cerr << "Is executing operator " << it->value << " \n";
+			vars.push(RunOption(v1, v2, it->value));
+		}
+		else
+		{
+			Variable v(*it);
+			vars.push(v);
+		}
+	}
+	return vars.top();
+}
+
+
+Variable Executer::RunOption(const Variable& _v1, const Variable& _v2, const std::string& opt)
+{
+	Variable v1 = _v1, v2 = _v2;
+	if (isvol(opt))
+	{
+		if (v1._type != __Variable::_varible) return Variable::err;
+		if (v2._type == __Variable::_varible) v2 = GetValue(*(std::string*)(v2._val));
+		if (opt == "=")GetValue(*(std::string*)(v1._val)) = v2;
+		else
+		{
+			return Variable::err;
+		}
+		return _v1;
+	}
+	Variable v;
+	if (v1._type == __Variable::_varible) v1 = GetValue(*(std::string*)(v1._val));
+	if (v2._type == __Variable::_varible) v2 = GetValue(*(std::string*)(v2._val));
+	if (v1._type == __Variable::_int && v2._type == __Variable::_int)
+	{
+		v._type = __Variable::_int;
+		v._val = new int;
+		if (opt == "+")*(int*)v._val = *(int*)v1._val + *(int*)v2._val;
+		else if (opt == "-")*(int*)v._val = *(int*)v1._val - *(int*)v2._val;
+		else if (opt == "*")*(int*)v._val = *(int*)v1._val * *(int*)v2._val;
+		else if (opt == "/")*(int*)v._val = *(int*)v1._val / *(int*)v2._val;
+		else if (opt == "%")*(int*)v._val = *(int*)v1._val % *(int*)v2._val;
+		else
+		{
 			v._type = __Variable::_error;
+			delete v._val;
 			v._val = nullptr;
 		}
-		return v;
 	}
-
-	Variable& Executer::GetValue(const std::string& s)
+	else
 	{
-		if (var_map.find(s) != var_map.end())
-			return var_map[s];
-		else if (father != nullptr)return father->GetValue(s);
-		else return Variable::err;
+		v._type = __Variable::_error;
+		v._val = nullptr;
 	}
+	return v;
+}
 
-	Variable Executer::Execute(const std::vector<Token>& tokenstream)
+Variable& Executer::GetValue(const std::string& s)
+{
+	if (var_map.find(s) != var_map.end())
+		return var_map[s];
+	else if (father != nullptr)return father->GetValue(s);
+	else return Variable::err;
+}
+
+void Executer::Execute(const std::vector<Token>& tokens)
+{
+	if (tokens.size() <= 0) return;
+	if (tokens[0].type == __Parser::define)
 	{
-		bool indefine = false;
-		if (tokenstream.size() >= 2)
-			if (tokenstream[0].type == __Parser::define && tokenstream[0].value == "let")
-			{
-				if (tokenstream[1].type == __Parser::variable)
-					indefine = true;
-				else
-					return Variable::err;
-				if (tokenstream.size() >= 4)
-					if (tokenstream[2].type != __Parser::option || tokenstream[2].value != "=")return Variable::err;
-
-				var_map[tokenstream[1].value] = Variable();
-			}
-		std::stack<Token> opts;
-		std::vector<Token> backtokens;
-		auto it = tokenstream.begin();
-		if (indefine)++it;
-		while (it != tokenstream.end())
+		for (int i = 1; i < tokens.size(); ++i)
 		{
-			if (it->type == __Parser::option)
+			if (tokens[i].type == __Parser::define)
 			{
-				if (it->value == ")")
-				{
-					while (!opts.empty() && opts.top().value != "(")
-					{
-						backtokens.emplace_back(opts.top());
-						opts.pop();
-					}
-					if (opts.empty())return Variable::err;//ERROR;
-					opts.pop();
-				}
-				else
-				{
-					//std::cerr << "Push operator " << it->value << " \n";
-					while (!opts.empty() && opts.top().value != "(" && GetPriority(opts.top().value) >= GetPriority(it->value))
-					{
-						//std::cerr << "Pop operator " << opts.top().value << " \n";
-						backtokens.emplace_back(opts.top());
-						opts.pop();
-					}
-					opts.push(*it);
-				}
+				UI::PrintErr("Format error");
+				return;
 			}
-			else
-			{
-				backtokens.emplace_back(*it);
-			}
-			++it;
 		}
-		while (!opts.empty()) { backtokens.emplace_back(opts.top()); opts.pop(); };
+		if (tokens[0].value == "end") return;
 
-
-		std::stack<Variable> vars;
-		it = backtokens.begin();
-		while (it != backtokens.end())
+		if (tokens[0].value == "let")
 		{
-			if (it->type == __Parser::option)
+			if (tokens.size() < 2 || tokens[1].type != __Parser::variable)
 			{
-				if (vars.size() < 2)return Variable::err;//ERROR;
-				Variable v1, v2;
-				v2 = vars.top(); vars.pop();
-				v1 = vars.top(); vars.pop();
-				//std::cerr << "Is executing operator " << it->value << " \n";
-				vars.push(RunOption(v1, v2, it->value));
+				UI::PrintErr("Cannot find the variable name");
+				return;
 			}
-			else
+			if (GetValue(tokens[1].value)._type != __Variable::_error)
 			{
-				Variable v(*it);
-				vars.push(v);
+				UI::PrintDefErr(tokens[1].value, "This sign is already existed");
+				return;
 			}
-			++it;
+			if (tokens.size() < 3)
+			{
+				var_map[tokens[1].value] = Variable::nul;
+				UI::PrintDefVar(tokens[1].value);
+				return;
+			}
+			if (tokens[2].type != __Parser::option || tokens[2].value != "=" || tokens.size() < 4)
+			{
+				UI::PrintDefErr(tokens[1].value, "Cannot find the initial value of the variable");
+				return;
+			}
+			Variable var = Calculate(tokens, 3);
+			if (var._type == __Variable::_error)
+			{
+				UI::PrintDefErr(tokens[1].value, "Initial error");
+				return;
+			}
+			var_map[tokens[1].value] = var;
+			UI::PrintDefVar(tokens[1].value);
+			return;
 		}
-		if (indefine) return Variable::deflog(tokenstream[1].value);
-		return vars.top();
+		else if (tokens[0].value == "def")
+		{
+
+		}
+		else
+		{
+			UI::PrintErr("Undefined define");
+			return;
+		}
 	}
+	
+	Variable var =  Calculate(tokens, 0);
+	if (var._type == __Variable::_error)
+	{
+		UI::PrintErr("Cannot calculate");
+		return;
+	}
+
+	if (var._type == __Variable::_int) UI::Print(*(int*)var._val);
+	else if (var._type == __Variable::_float) UI::Print(*(double*)var._val);
+	else if (var._type == __Variable::_matrix) UI::Print(*(Matrix*)var._val);
+	else if (var._type == __Variable::_string) UI::Print(*(std::string*)var._val);
+	else UI::PrintErr("Unknown error");
+}

@@ -1,5 +1,4 @@
 #include <iostream>
-#include "WordAnalyser.h"
 #include "Parser.h"
 #include "Matrix.h"
 #include "Executer.h"
@@ -7,30 +6,17 @@
 
 using namespace std;
 
-using __Parser::Token;
-using __Parser::Parser;
-using __Executer::Executer;
-
-int main()
-{/*
-	WordAnalyser w;
-	string s;
-	vector<string> v;
-	getline(cin, s);
-	w.split(s, v);
-	for (int i = 0; i < v.size(); ++i)
-	{
-		cout <<" [ " << v[i] << " ] ";
-	}*/
+int main(int argc, char* argv[])
+{
 	string s;
 	Executer ext;
+	//Executer ext;
 	while (1)
 	{
 		s = UI::GetInputLine();
 		vector<Token> tokens = Parser::getTokens(s);
-		//__Parser::PrintTokens(tokens);
-		__Variable::Varible var = ext.Execute(tokens);
-		var.output(cout,ext);
+		//UI::PrintTokens(tokens);
+		ext.Execute(tokens);
 		cout << "\n";
 	}
 	return 0;

@@ -1,6 +1,7 @@
 #include "UI.h"
 #include "Matrix.h"
 #include "Var.h"
+#include "Parser.h"
 
 #include <iostream>
 
@@ -27,30 +28,35 @@ void UI::Print(const Matrix& matrix)
 	{
 		for (int j = 0; j < matrix.col; ++j)
 		{
-			printf("%10d", matrix.buffer[i * matrix.col + j]);
+			printf("%10lf", matrix.buffer[i * matrix.col + j]);
 		}
 		printf("\n");
 	}
 	printf("\n");
 }
+void UI::Print(const std::string& str)
+{
+	printf("\"%s\"", str.c_str());
+}
+
 void UI::Print(const Variable& var)
 {
 	switch (var._type)
 	{
 	case __Variable::_error:
-		printf("Error\n");
+		printf("Error");
 		break;
 	case __Variable::_null:
-		printf("null\n");
+		printf("null");
 		break;
 	case __Variable::_int:
-		printf("%d\n", *(int*)var._val);
+		printf("%d", *(int*)var._val);
 		break;
 	case __Variable::_float:
-		printf("%lf\n", *(double*)var._val);
+		printf("%lf", *(double*)var._val);
 		break;
 	case __Variable::_string:
-		printf("%s\n", *(std::string*)var._val);
+		printf("%s", (*(std::string*)var._val).c_str());
 		break;
 	case __Variable::_matrix:
 		Print(*(Matrix*)var._val);
@@ -64,4 +70,44 @@ void UI::Print(const Variable& var)
 	default:
 		break;
 	}
+}
+void UI::PrintToken(const Token& token)
+{
+	using namespace __Parser;
+	auto getType = [](TokenType t) {
+		if (t == error) return "error";
+		if (t == number) return "number";
+		if (t == option) return "option";
+		if (t == define) return "define";
+		if (t == variable) return "variable";
+		if (t == string) return "string";
+		if (t == matrix) return "matrix";
+		if (t == function)return "function";
+		return "unknown";
+	};
+	printf("%s, %s\n", getType(token.type), token.value.c_str());
+}
+void UI::PrintTokens(const std::vector<Token>& tokens)
+{
+	for (Token token : tokens)
+	{
+		PrintToken(token);
+	}
+}
+
+void UI::PrintDefVar(const std::string& var_name)
+{
+	printf("Variable %s is defined.", var_name.c_str());
+}
+void UI::PrintDefFunc(const std::string& func_name)
+{
+	printf("Function %s is defined.", func_name.c_str());
+}
+void UI::PrintDefErr(const std::string& def_name, const std::string& reason)
+{
+	printf("Error: cannot define %s. %s.", def_name.c_str(), reason.c_str());
+}
+void UI::PrintErr(const std::string& reason)
+{
+	printf("Error: %s.", reason.c_str());
 }

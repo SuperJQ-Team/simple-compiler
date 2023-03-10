@@ -110,40 +110,6 @@ void Variable::set(const Token& token)
 	}
 }
 
-
-void Variable::output(std::ostream& os, __Executer::Executer& ex)
-{
-	switch (_type)
-	{
-	case _error:
-		os << "Error!";
-		break;
-	case _null:
-		os << "null";
-		break;
-	case _int:
-		os << *(int*)_val;
-		break;
-	case _float:
-		os << *(double*)_val;
-		break;
-	case _string:
-		os << *(std::string*)_val;
-		break;
-	case _matrix:
-		(*(Matrix*)_val);
-		break;
-	case _definelog:
-		os << "varible " << *(std::string*)_val << " has been creat";
-		break;
-	case _varible:
-		os << "varible " << *(std::string*)_val << " = "; ex.GetValue(*(std::string*)this->_val).output(os, ex);
-		break;
-	default:
-		break;
-	}
-}
-
 Variable Variable::deflog(const std::string& s)
 {
 	auto v = Variable();

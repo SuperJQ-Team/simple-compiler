@@ -36,7 +36,6 @@ public:
 	Variable operator= (const Variable& var);
 
 	void set(const Token& token);
-	void output(std::ostream& os, __Executer::Executer&);
 
 	static Variable err;
 	static Variable nul;

@@ -7,7 +7,7 @@ char sign[] = { '+','-','*','/','%','<','>','=','(',')','[',']','{','}',
 						'!','@','#','$','^','&','~','?',':',';','\'','"','\\','|' };
 
 std::string optsig[] = { "+","-","*","/","%",">","<","=","(",")","[","]","{","}"
-					,"!","^","&","|","~","?",":",";",",","'","\"","."
+					,"!","^","&","|","~","?",":",";",",","'","\"",
 					">=","<=","==","!=","||","&&",
 					"+=","-=","*=","/=","&=","|=","~=","^=",
 					"++","--","->","::" };
@@ -69,8 +69,8 @@ OptionType GetOptType(std::string c)
 	if (c == "/=") return divisionis;
 	if (c == "%=") return modulois;
 	if (c == "&=") return andis;
-	if (c == "|=") return right_brack;
-	if (c == "^=") return right_brack;
+	if (c == "|=") return oris;
+	if (c == "^=") return xoris;
 	if (c == "~=") return right_brack;
 	return error_option;
 }
@@ -142,6 +142,12 @@ Token Automaton::ParseToken()
 			{
 				if (left_bracks_num == 0) state = ERROR;
 				--left_bracks_num;
+				if (left_bracks_num == 0)
+				{
+					token.value.push_back('}');
+					++it;
+					state = END;
+				}
 			}
 			if (state != END && state != ERROR) state = MATRIX;
 		}
@@ -171,7 +177,7 @@ Token Automaton::ParseToken()
 				if (*it == '(' && state == VARIABLE && token.type == variable)
 				{
 					token.type = function;
-					it++;
+					++it;
 				}
 				if ((*it == '(' && state == OPTION) || last_sign == ')')state = END;
 				else state = state_trans[state][OPTION];
@@ -215,33 +221,15 @@ Token Automaton::ParseToken()
 }
 
 
-	std::vector<Token> Parser::getTokens(const std::string& input_string)
+std::vector<Token> Parser::getTokens(const std::string& input_string)
+{
+	std::vector<Token> tokens;
+	Automaton automaton(input_string);
+	while (automaton.parse_end == false)
 	{
-		std::vector<Token> tokens;
-		Automaton automaton(input_string);
-		while (automaton.parse_end == false)
-		{
-			Token token = automaton.ParseToken();
-			tokens.emplace_back(token);
-			if (token.type == error) break;
-		}
-		return tokens;
+		Token token = automaton.ParseToken();
+		tokens.emplace_back(token);
+		if (token.type == error) break;
 	}
-	void PrintTokens(const std::vector<Token>& tokens)
-	{
-		auto getType = [](TokenType t) {
-			if (t == error) return "error";
-			if (t == number) return "number";
-			if (t == option) return "option";
-			if (t == define) return "define";
-			if (t == variable) return "variable";
-			if (t == string) return "string";
-			if (t == matrix) return "matrix";
-			if (t == function)return "function";
-			return "unknown";
-		};
-		for (Token token : tokens)
-		{
-			std::cout << getType(token.type) << ", " << token.value << '\n';
-		}
-	}
+	return tokens;
+}

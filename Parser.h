@@ -4,6 +4,9 @@
 #include <string>
 #include <vector>
 
+class Token;
+class Parser;
+
 namespace __Parser {
 
 	enum TokenType
@@ -65,9 +68,6 @@ namespace __Parser {
 
 
 	};
-
-	
-	void PrintTokens(const std::vector<Token>& tokens);
 }
 
 class Token
