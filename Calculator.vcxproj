@@ -145,7 +145,7 @@
     <ClCompile Include="Operator.cpp" />
     <ClCompile Include="Var.cpp" />
     <ClCompile Include="WordAnalyser.cpp" />
-    <ClCompile Include="源.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="Parser.cpp" />
   </ItemGroup>
   <ItemGroup>
