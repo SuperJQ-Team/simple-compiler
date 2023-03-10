@@ -77,7 +77,11 @@ Variable Executer::Calculate(const std::vector<Token>& tokens, int index)
 	}
 	return vars.top();
 }
-
+bool Executer::isOccured(const std::string& name)
+{
+	if (sign_map.find(name) != sign_map.end()) return true;
+	return false;
+}
 
 Variable Executer::RunOption(const Variable& _v1, const Variable& _v2, const std::string& opt)
 {
@@ -150,30 +154,34 @@ void Executer::Execute(const std::vector<Token>& tokens)
 				UI::PrintErr("Cannot find the variable name");
 				return;
 			}
-			if (GetValue(tokens[1].value)._type != __Variable::_error)
+			const std::string& name = tokens[1].value;
+
+			if (isOccured(name))
 			{
 				UI::PrintDefErr(tokens[1].value, "This sign is already existed");
 				return;
 			}
 			if (tokens.size() < 3)
 			{
-				var_map[tokens[1].value] = Variable::nul;
-				UI::PrintDefVar(tokens[1].value);
+				sign_map[name] = _var;
+				var_map[name] = Variable::nul;
+				UI::PrintDefVar(name);
 				return;
 			}
 			if (tokens[2].type != __Parser::option || tokens[2].value != "=" || tokens.size() < 4)
 			{
-				UI::PrintDefErr(tokens[1].value, "Cannot find the initial value of the variable");
+				UI::PrintDefErr(name, "Cannot find the initial value of the variable");
 				return;
 			}
 			Variable var = Calculate(tokens, 3);
 			if (var._type == __Variable::_error)
 			{
-				UI::PrintDefErr(tokens[1].value, "Initial error");
+				UI::PrintDefErr(name, "Initial error");
 				return;
 			}
-			var_map[tokens[1].value] = var;
-			UI::PrintDefVar(tokens[1].value);
+			sign_map[name] = _var;
+			var_map[name] = var;
+			UI::PrintDefVar(name);
 			return;
 		}
 		else if (tokens[0].value == "def")
@@ -194,9 +202,6 @@ void Executer::Execute(const std::vector<Token>& tokens)
 		return;
 	}
 
-	if (var._type == __Variable::_int) UI::Print(*(int*)var._val);
-	else if (var._type == __Variable::_float) UI::Print(*(double*)var._val);
-	else if (var._type == __Variable::_matrix) UI::Print(*(Matrix*)var._val);
-	else if (var._type == __Variable::_string) UI::Print(*(std::string*)var._val);
-	else UI::PrintErr("Unknown error");
+	if (var._type == __Variable::_varible) UI::Print(var_map[*(std::string*)var._val]);
+	else UI::Print(var);
 }
