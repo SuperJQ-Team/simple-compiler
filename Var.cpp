@@ -39,8 +39,9 @@ Variable::Variable(const Variable& var)
 		_val = new Matrix(*(Matrix*)(var._val));
 }
 
-Variable Variable::operator=(const Variable& var)
+Variable& Variable::operator=(const Variable& var)
 {
+	if (this == &var) return *this;
 	_type = var._type;
 	if (_type == _null)
 		_val = nullptr;

@@ -33,7 +33,7 @@ public:
 	Variable(const Token& token);
 	Variable(const Variable& var);
 
-	Variable operator= (const Variable& var);
+	Variable& operator= (const Variable& var);
 
 	void set(const Token& token);
 
