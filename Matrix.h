@@ -14,6 +14,6 @@ public:
 	Matrix(int row, int col);
 	Matrix(const Matrix&);
 	
-	friend void UI::Print(const Matrix& matrix);
+	static friend void UI::Print(const Matrix& matrix);
 };
 

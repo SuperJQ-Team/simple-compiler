@@ -1,4 +1,5 @@
 #include "UI.h"
+#include "Matrix.h"
 
 #include <iostream>
 
@@ -21,11 +22,11 @@ void UI::Print(double number)
 void UI::Print(const Matrix& matrix)
 {
 	printf("Matrix %d * %d: \n", matrix.row, matrix.col);
-	for (int i = 0; i < row; ++i)
+	for (int i = 0; i < matrix.row; ++i)
 	{
-		for (int j = 0; j < col; ++j)
+		for (int j = 0; j < matrix.col; ++j)
 		{
-			printf("%10d", buffer[i * col + j]);
+			printf("%10d", matrix.buffer[i * matrix.col + j]);
 		}
 		printf("\n");
 	}

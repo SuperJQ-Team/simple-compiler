@@ -58,12 +58,32 @@ void __Varible::Varible::set(const __Parser::Token& token)
 {
 	if (token.type == __Parser::number)
 	{
-		_type = _int;
-		_val = new int(0);
-		int& val = *(int*)_val;
+		double val = 0;
+		bool ifd = false;
+		double ws = 1;
+		//TODO
 		for (auto i : token.value)
 		{
-			val = val * 10 + i - '0' + 0;
+			if (ifd)ws *= 10;
+			if (i != '.')
+				val = val * 10 + i - '0' + 0;
+			else
+				if (!ifd)ifd = true;
+				else
+				{
+					*this = Varible::err;
+					return;
+				}
+		}
+		if (!ifd)
+		{
+			_type = _int;
+			_val = new int((int)val);
+		}
+		else
+		{
+			_type = _float;
+			_val = new double(val / ws);
 		}
 	}
 	else if (token.type == __Parser::string)
@@ -103,13 +123,13 @@ void __Varible::Varible::output(std::ostream& os, __Executer::Executer& ex)
 		os << *(int*)_val;
 		break;
 	case __Varible::_float:
-		os << *(float*)_val;
+		os << *(double*)_val;
 		break;
 	case __Varible::_string:
 		os << *(std::string*)_val;
 		break;
 	case __Varible::_matrix:
-		(*(Matrix*)_val).print(os);
+		(*(Matrix*)_val);
 		break;
 	case __Varible::_definelog:
 		os << "varible " << *(std::string*)_val << " has been creat";

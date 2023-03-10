@@ -169,7 +169,7 @@ __Parser::Token Automaton::ParseToken()
 				state = state_trans[state][VARIABLE];
 			}
 		}
-		else if (*it == ' ' || *it == ',')
+		else if (*it == ' ' || *it == ',' || *it == ';')
 		{
 			state = state_trans[state][SPACE];
 		}

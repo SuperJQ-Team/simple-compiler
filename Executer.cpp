@@ -20,14 +20,14 @@ inline bool isvol(const std::string s)
 
 namespace __Executer {
 
-	Varible Executer::RunOption(Varible& _v1, const Varible& _v2, const std::string& opt)
+	Varible Executer::RunOption(const Varible& _v1, const Varible& _v2, const std::string& opt)
 	{
 		Varible v1 = _v1, v2 = _v2;
 		if (isvol(opt))
 		{
-			if (_v1._type != __Varible::_varible) return Varible::err;
+			if (v1._type != __Varible::_varible) return Varible::err;
 			if (v2._type == __Varible::_varible) v2 = GetValue(*(std::string*)(v2._val));
-			if (opt == "=")_v1 = v2;
+			if (opt == "=")GetValue(*(std::string*)(v1._val)) = v2;
 			else
 			{
 				return Varible::err;
@@ -73,7 +73,7 @@ namespace __Executer {
 	{
 		bool indefine = false;
 		if (tokenstream.size() >= 2)
-			if (tokenstream[0].type == __Parser::define)
+			if (tokenstream[0].type == __Parser::define && tokenstream[0].value == "let")
 			{
 				if (tokenstream[1].type == __Parser::variable)
 					indefine = true;
@@ -99,7 +99,7 @@ namespace __Executer {
 						backtokens.emplace_back(opts.top());
 						opts.pop();
 					}
-					if (opts.empty());//ERROR;
+					if (opts.empty())return Varible::err;//ERROR;
 					opts.pop();
 				}
 				else
@@ -129,7 +129,7 @@ namespace __Executer {
 		{
 			if (it->type == __Parser::option)
 			{
-				if (vars.size() < 2);//ERROR;
+				if (vars.size() < 2)return Varible::err;//ERROR;
 				Varible v1, v2;
 				v2 = vars.top(); vars.pop();
 				v1 = vars.top(); vars.pop();

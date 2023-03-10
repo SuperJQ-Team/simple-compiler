@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "Matrix.h"
+class Matrix;
 
 
 class UI
