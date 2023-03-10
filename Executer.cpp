@@ -145,7 +145,11 @@ void Executer::Execute(const std::vector<Token>& tokens)
 				return;
 			}
 		}
-		if (tokens[0].value == "end") return;
+		if (tokens[0].value == "end")
+		{
+			UI::PrintErr("\"End\" should not exist at there");
+			return;
+		}
 
 		if (tokens[0].value == "let")
 		{
