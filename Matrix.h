@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include "UI.h"
+
 class Matrix
 {
 	bool is_valid;
@@ -11,6 +13,7 @@ public:
 	Matrix(const std::string& token);
 	Matrix(int row, int col);
 	Matrix(const Matrix&);
-	void print(std::ostream& os);
+	
+	friend void UI::Print(const Matrix& matrix);
 };
 

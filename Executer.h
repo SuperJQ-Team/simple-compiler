@@ -17,8 +17,8 @@ namespace __Executer {
 		Executer* father = nullptr;
 		std::map<std::string, Varible> var_map;
 	public:
-		Varible runoption(Varible& v1, const Varible& v2, const std::string& opt);
-		Varible& getvalue(const std::string&);
-		Varible execute(const std::vector<Token>& tokens);
+		Varible RunOption(Varible& v1, const Varible& v2, const std::string& opt);
+		Varible& GetValue(const std::string&);
+		Varible Execute(const std::vector<Token>& tokens);
 	};
 }

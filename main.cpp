@@ -3,6 +3,7 @@
 #include "Parser.h"
 #include "Matrix.h"
 #include "Executer.h"
+#include "UI.h"
 
 using namespace std;
 
@@ -25,10 +26,10 @@ int main()
 	Executer ext;
 	while (1)
 	{
-		getline(cin, s);
+		s = UI::GetInputLine();
 		vector<Token> tokens = Parser::getTokens(s);
-		__Parser::PrintTokens(tokens);
-		__Varible::Varible var = ext.execute(tokens);
+		//__Parser::PrintTokens(tokens);
+		__Varible::Varible var = ext.Execute(tokens);
 		var.output(cout,ext);
 		cout << "\n";
 	}

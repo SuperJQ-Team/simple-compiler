@@ -20,13 +20,13 @@ inline bool isvol(const std::string s)
 
 namespace __Executer {
 
-	Varible Executer::runoption(Varible& _v1, const Varible& _v2, const std::string& opt)
+	Varible Executer::RunOption(Varible& _v1, const Varible& _v2, const std::string& opt)
 	{
 		Varible v1 = _v1, v2 = _v2;
 		if (isvol(opt))
 		{
-			if (_v1._type != __Varible::_varible)return Varible::err;
-			if (v2._type == __Varible::_varible) v2 = getvalue(*(std::string*)(v2._val));
+			if (_v1._type != __Varible::_varible) return Varible::err;
+			if (v2._type == __Varible::_varible) v2 = GetValue(*(std::string*)(v2._val));
 			if (opt == "=")_v1 = v2;
 			else
 			{
@@ -35,8 +35,8 @@ namespace __Executer {
 			return _v1;
 		}
 		Varible v;
-		if (v1._type == __Varible::_varible) v1 = getvalue(*(std::string*)(v1._val));
-		if (v2._type == __Varible::_varible) v2 = getvalue(*(std::string*)(v2._val));
+		if (v1._type == __Varible::_varible) v1 = GetValue(*(std::string*)(v1._val));
+		if (v2._type == __Varible::_varible) v2 = GetValue(*(std::string*)(v2._val));
 		if (v1._type == __Varible::_int && v2._type == __Varible::_int)
 		{
 			v._type = __Varible::_int;
@@ -61,15 +61,15 @@ namespace __Executer {
 		return v;
 	}
 
-	Varible& Executer::getvalue(const std::string& s)
+	Varible& Executer::GetValue(const std::string& s)
 	{
 		if (var_map.count(s))
 			return var_map[s];
-		else if (father != nullptr)return father->getvalue(s);
+		else if (father != nullptr)return father->GetValue(s);
 		else return Varible::err;
 	}
 
-	Varible Executer::execute(const std::vector<Token>& tokenstream)
+	Varible Executer::Execute(const std::vector<Token>& tokenstream)
 	{
 		bool indefine = false;
 		if (tokenstream.size() >= 2)
@@ -134,7 +134,7 @@ namespace __Executer {
 				v2 = vars.top(); vars.pop();
 				v1 = vars.top(); vars.pop();
 				//std::cerr << "Is executing operator " << it->value << " \n";
-				vars.push(runoption(v1, v2, it->value));
+				vars.push(RunOption(v1, v2, it->value));
 			}
 			else
 			{
@@ -143,7 +143,7 @@ namespace __Executer {
 			}
 			++it;
 		}
-		if (indefine)return Varible::deflog(tokenstream[1].value);
+		if (indefine) return Varible::deflog(tokenstream[1].value);
 		return vars.top();
 	}
 }

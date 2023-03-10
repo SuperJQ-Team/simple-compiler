@@ -118,17 +118,3 @@ Matrix::Matrix(const std::string& token)
 		if (left_brack_num == 0) break;
 	}
 }
-
-void Matrix::print(std::ostream& os)
-{
-	printf("Matrix %d * %d: \n", row, col);
-	for (int i = 0; i < row; ++i)
-	{
-		for (int j = 0; j < col; ++j)
-		{
-			printf("%10d", buffer[i * col + j]);
-		}
-		printf("\n");
-	}
-	printf("\n");
-}

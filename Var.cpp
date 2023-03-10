@@ -115,7 +115,7 @@ void __Varible::Varible::output(std::ostream& os, __Executer::Executer& ex)
 		os << "varible " << *(std::string*)_val << " has been creat";
 		break;
 	case __Varible::_varible:
-		os << "varible " << *(std::string*)_val << " = "; ex.getvalue(*(std::string*)this->_val).output(os, ex);
+		os << "varible " << *(std::string*)_val << " = "; ex.GetValue(*(std::string*)this->_val).output(os, ex);
 		break;
 	default:
 		break;
