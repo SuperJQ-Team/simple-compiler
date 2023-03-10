@@ -75,6 +75,7 @@ Variable Executer::Calculate(const std::vector<Token>& tokens, int index)
 			vars.push(v);
 		}
 	}
+	if (vars.top()._type == __Variable::_varible)return GetValue(*(std::string*)vars.top()._val);
 	return vars.top();
 }
 bool Executer::isOccured(const std::string& name)
@@ -198,8 +199,8 @@ void Executer::Execute(const std::vector<Token>& tokens)
 			return;
 		}
 	}
-	
-	Variable var =  Calculate(tokens, 0);
+
+	Variable var = Calculate(tokens, 0);
 	if (var._type == __Variable::_error)
 	{
 		UI::PrintErr("Cannot calculate");
