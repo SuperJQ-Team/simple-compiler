@@ -44,7 +44,7 @@ bool isDefineSign(const std::string& last_sign, char c)
 	return false;
 }
 
-OptionType GetOptType(std::string c)
+OptionType __Parser::GetOptType(std::string c)
 {
 	if (c == "+") return plus;
 	if (c == "-") return minus;
@@ -62,6 +62,17 @@ OptionType GetOptType(std::string c)
 	if (c == ">>") return right_move;
 	if (c == "<<") return left_move;
 
+	if (c == "==")return equal;
+	if (c == ">")return bigger;
+	if (c == "<")return lower;
+	if (c == ">=")return bigorequ;
+	if (c == "<=")return loworequ;
+	if (c == "!=")return notequal;
+
+	if (c == "&&")return logicand;
+	if (c == "||")return logicor;
+	if (c == "!")return logicnot;
+
 	if (c == "=") return is;
 	if (c == "+=") return plusis;
 	if (c == "-=") return minusis;
@@ -71,7 +82,18 @@ OptionType GetOptType(std::string c)
 	if (c == "&=") return andis;
 	if (c == "|=") return oris;
 	if (c == "^=") return xoris;
-	if (c == "~=") return right_brack;
+	if (c == "~=") return notis;
+	if (c == "<<=")return left_moveis;
+	if (c == ">>=")return right_moveis;
+
+	if (c == "[")return left_block_brack;
+	if (c == "]")return right_block_brack;
+
+	if (c == "?")return question;
+	if (c == ":")return colon;
+
+	if (c == "**")return power;
+
 	return error_option;
 }
 

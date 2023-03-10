@@ -41,7 +41,7 @@ namespace __Parser {
 
 		equal = 13,
 		bigger = 14,
-		lowwer = 15,
+		lower = 15,
 		bigorequ = 16,
 		loworequ = 17,
 		notequal = 18,
@@ -63,11 +63,17 @@ namespace __Parser {
 
 		left_block_brack = 40,
 		right_block_brack = 41,
-		left_flower_brack = 42,
-		right_flower_brack = 43,
 
+		left_moveis = 42,
+		right_moveis=43,
 
+		question = 44,
+		colon = 45,
+
+		power = 49,
 	};
+
+	OptionType GetOptType(std::string c);
 }
 
 class Token

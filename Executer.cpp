@@ -5,18 +5,102 @@
 
 int GetPriority(const std::string& opt)
 {
-	if (opt == "+")return 0;
-	if (opt == "-")return 0;
-	if (opt == "*")return 1;
-	if (opt == "/")return 1;
-	if (opt == "%")return 2;
-	if (opt == "(")return 255;
+	__Parser::OptionType opty = __Parser::GetOptType(opt);
+	switch (opty)
+	{
+	case __Parser::error_option:
+		return -1;
+	case __Parser::plus:
+		return 10;
+	case __Parser::minus:
+		return 10;
+	case __Parser::times:
+		return 11;
+	case __Parser::division:
+		return 11;
+	case __Parser::modulo:
+		return 11;
+	case __Parser::left_brack:
+		return 255;
+	case __Parser::right_brack:
+		return 255;
+	case __Parser::bitands:
+		return 6;
+	case __Parser::bitors:
+		return 4;
+	case __Parser::xors:
+		return 5;
+	case __Parser::bitnot:
+		return 13;
+	case __Parser::right_move:
+		return 9;
+	case __Parser::left_move:
+		return 9;
+	case __Parser::equal:
+		return 7;
+	case __Parser::bigger:
+		return 8;
+	case __Parser::lower:
+		return 8;
+	case __Parser::bigorequ:
+		return 8;
+	case __Parser::loworequ:
+		return 8;
+	case __Parser::notequal:
+		return 7;
+	case __Parser::logicand:
+		return 3;
+	case __Parser::logicor:
+		return 2;
+	case __Parser::logicnot:
+		return 13;
+	case __Parser::is:
+		return 0;
+	case __Parser::plusis:
+		return 0;
+	case __Parser::minusis:
+		return 0;
+	case __Parser::timesis:
+		return 0;
+	case __Parser::divisionis:
+		return 0;
+	case __Parser::modulois:
+		return 0;
+	case __Parser::andis:
+		return 0;
+	case __Parser::oris:
+		return 0;
+	case __Parser::xoris:
+		return 0;
+	case __Parser::notis:
+		return 0;
+	case __Parser::left_block_brack:
+		return 14;
+	case __Parser::right_block_brack:
+		return 14;
+	case __Parser::left_moveis:
+		return 0;
+	case __Parser::right_moveis:
+		return 0;
+	case __Parser::question:
+		return 1;
+	case __Parser::colon:
+		return 1;
+	case __Parser::power:
+		return 12;
+	default:
+		return -1;
+	}
 	return -1;
 }
 
 inline bool isvol(const std::string s)
 {
-	return s == "=" || s == "+=" || s == "-=" || s == "*=" || s == "/=" || s == "%=" || s == "&=" || s == "|=" || s == "^=";
+	return s == "=" || s == "+=" || s == "-=" ||
+		s == "*=" || s == "/=" || s == "%=" ||
+		s == "&=" || s == "|=" || s == "^=" || s == "~=" ||
+		s == "<<=" || s == ">>=";
+
 }
 
 Variable Executer::Calculate(const std::vector<Token>& tokens, int index)
