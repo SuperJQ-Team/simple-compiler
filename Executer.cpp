@@ -5,88 +5,88 @@
 
 int GetPriority(const std::string& opt)
 {
-	__Parser::OptionType opty = __Parser::GetOptType(opt);
+	__Lexer::OptionType opty = __Lexer::GetOptType(opt);
 	switch (opty)
 	{
-	case __Parser::error_option:
+	case __Lexer::error_option:
 		return -1;
-	case __Parser::plus:
+	case __Lexer::plus:
 		return 10;
-	case __Parser::minus:
+	case __Lexer::minus:
 		return 10;
-	case __Parser::times:
+	case __Lexer::times:
 		return 11;
-	case __Parser::division:
+	case __Lexer::division:
 		return 11;
-	case __Parser::modulo:
+	case __Lexer::modulo:
 		return 11;
-	case __Parser::left_brack:
+	case __Lexer::left_brack:
 		return 255;
-	case __Parser::right_brack:
+	case __Lexer::right_brack:
 		return 255;
-	case __Parser::bitands:
+	case __Lexer::bitands:
 		return 6;
-	case __Parser::bitors:
+	case __Lexer::bitors:
 		return 4;
-	case __Parser::xors:
+	case __Lexer::xors:
 		return 5;
-	case __Parser::bitnot:
+	case __Lexer::bitnot:
 		return 13;
-	case __Parser::right_move:
+	case __Lexer::right_move:
 		return 9;
-	case __Parser::left_move:
+	case __Lexer::left_move:
 		return 9;
-	case __Parser::equal:
+	case __Lexer::equal:
 		return 7;
-	case __Parser::bigger:
+	case __Lexer::bigger:
 		return 8;
-	case __Parser::lower:
+	case __Lexer::lower:
 		return 8;
-	case __Parser::bigorequ:
+	case __Lexer::bigorequ:
 		return 8;
-	case __Parser::loworequ:
+	case __Lexer::loworequ:
 		return 8;
-	case __Parser::notequal:
+	case __Lexer::notequal:
 		return 7;
-	case __Parser::logicand:
+	case __Lexer::logicand:
 		return 3;
-	case __Parser::logicor:
+	case __Lexer::logicor:
 		return 2;
-	case __Parser::logicnot:
+	case __Lexer::logicnot:
 		return 13;
-	case __Parser::is:
+	case __Lexer::is:
 		return 0;
-	case __Parser::plusis:
+	case __Lexer::plusis:
 		return 0;
-	case __Parser::minusis:
+	case __Lexer::minusis:
 		return 0;
-	case __Parser::timesis:
+	case __Lexer::timesis:
 		return 0;
-	case __Parser::divisionis:
+	case __Lexer::divisionis:
 		return 0;
-	case __Parser::modulois:
+	case __Lexer::modulois:
 		return 0;
-	case __Parser::andis:
+	case __Lexer::andis:
 		return 0;
-	case __Parser::oris:
+	case __Lexer::oris:
 		return 0;
-	case __Parser::xoris:
+	case __Lexer::xoris:
 		return 0;
-	case __Parser::notis:
+	case __Lexer::notis:
 		return 0;
-	case __Parser::left_block_brack:
+	case __Lexer::left_block_brack:
 		return 14;
-	case __Parser::right_block_brack:
+	case __Lexer::right_block_brack:
 		return 14;
-	case __Parser::left_moveis:
+	case __Lexer::left_moveis:
 		return 0;
-	case __Parser::right_moveis:
+	case __Lexer::right_moveis:
 		return 0;
-	case __Parser::question:
+	case __Lexer::question:
 		return 1;
-	case __Parser::colon:
+	case __Lexer::colon:
 		return 1;
-	case __Parser::power:
+	case __Lexer::power:
 		return 12;
 	default:
 		return -1;
@@ -109,11 +109,11 @@ Variable Executer::Calculate(const std::vector<Token>& tokens, int index)
 	std::vector<Token> backtokens;
 	for (; index < tokens.size(); ++index)
 	{
-		if (tokens[index].type == __Parser::end)
+		if (tokens[index].type == __Lexer::end)
 		{
 			break;
 		}
-		if (tokens[index].type == __Parser::option)
+		if (tokens[index].type == __Lexer::option)
 		{
 
 			if (tokens[index].value == ")")
@@ -149,7 +149,7 @@ Variable Executer::Calculate(const std::vector<Token>& tokens, int index)
 	std::stack<Variable> vars;
 	for (auto it = backtokens.begin(); it != backtokens.end(); ++it)
 	{
-		if (it->type == __Parser::option)
+		if (it->type == __Lexer::option)
 		{
 			if (vars.size() < 2)return Variable::err;//ERROR;
 			Variable v1, v2;
@@ -196,78 +196,78 @@ Variable Executer::RunOption(const Variable& _v1, const Variable& _v2, const std
 	{
 		int x1 = *(int*)v1.value, x2 = *(int*)v2.value;
 
-		__Parser::OptionType opty = __Parser::GetOptType(opt);
+		__Lexer::OptionType opty = __Lexer::GetOptType(opt);
 		switch (opty)
 		{
-		case __Parser::error_option:
+		case __Lexer::error_option:
 			v.type = __Variable::_error;
 			return v;
 			break;
-		case __Parser::plus:
+		case __Lexer::plus:
 			v.type = __Variable::_int;
 			v.value = new int(x1 + x2);
 			break;
-		case __Parser::minus:
+		case __Lexer::minus:
 			v.type = __Variable::_int;
 			v.value = new int(x1 - x2);
 			break;
-		case __Parser::times:
+		case __Lexer::times:
 			v.type = __Variable::_int;
 			v.value = new int(x1 * x2);
 			break;
-		case __Parser::division:
+		case __Lexer::division:
 			v.type = __Variable::_int;
 			v.value = new int(x1 / x2);
 			break;
-		case __Parser::modulo:
+		case __Lexer::modulo:
 			v.type = __Variable::_int;
 			v.value = new int(x1 % x2);
 			break;
-		case __Parser::bitands:
+		case __Lexer::bitands:
 			v.type = __Variable::_int;
 			v.value = new int(x1 & x2);
 			break;
-		case __Parser::bitors:
+		case __Lexer::bitors:
 			v.type = __Variable::_int;
 			v.value = new int(x1 | x2);
 			break;
-		case __Parser::xors:
+		case __Lexer::xors:
 			v.type = __Variable::_int;
 			v.value = new int(x1 ^ x2);
 			break;
-		case __Parser::right_move:
+		case __Lexer::right_move:
 			v.type = __Variable::_int;
 			v.value = new int(x1 >> x2);
 			break;
-		case __Parser::left_move:
+		case __Lexer::left_move:
 			v.type = __Variable::_int;
 			v.value = new int(x1 << x2);
 			break;
-		case __Parser::equal:
+		case __Lexer::equal:
 			v.type = __Variable::_bool;
 			v.value = new bool(x1 == x2);
 			break;
-		case __Parser::bigger:
+		case __Lexer::bigger:
 			v.type = __Variable::_bool;
 			v.value = new bool(x1 > x2);
 			break;
-		case __Parser::lower:
+		case __Lexer::lower:
 			v.type = __Variable::_bool;
 			v.value = new bool(x1 < x2);
 			break;
-		case __Parser::bigorequ:
+		case __Lexer::bigorequ:
 			v.type = __Variable::_bool;
 			v.value = new bool(x1 >= x2);
 			break;
-		case __Parser::loworequ:
+		case __Lexer::loworequ:
 			v.type = __Variable::_bool;
 			v.value = new bool(x1 <= x2);
 			break;
-		case __Parser::notequal:
+		case __Lexer::notequal:
 			v.type = __Variable::_bool;
 			v.value = new bool(x1 != x2);
 			break;
-		case __Parser::power:
+		case __Lexer::power:
 			v.type = __Variable::_int;
 			v.value = new int(pow(x1, x2));
 			break;
@@ -285,53 +285,53 @@ Variable Executer::RunOption(const Variable& _v1, const Variable& _v2, const std
 		if (v2.type == __Variable::_float)x2 = *(double*)v2.value;
 		else x2 = (double)*(int*)v2.value;
 
-		__Parser::OptionType opty = __Parser::GetOptType(opt);
+		__Lexer::OptionType opty = __Lexer::GetOptType(opt);
 		switch (opty)
 		{
-		case __Parser::error_option:
+		case __Lexer::error_option:
 			v.type = __Variable::_error;
 			return v;
-		case __Parser::plus:
+		case __Lexer::plus:
 			v.type = __Variable::_float;
 			v.value = new double(x1 + x2);
 			break;
-		case __Parser::minus:
+		case __Lexer::minus:
 			v.type = __Variable::_float;
 			v.value = new double(x1 - x2);
 			break;
-		case __Parser::times:
+		case __Lexer::times:
 			v.type = __Variable::_float;
 			v.value = new double(x1 * x2);
 			break;
-		case __Parser::division:
+		case __Lexer::division:
 			v.type = __Variable::_float;
 			v.value = new double(x1 / x2);
 			break;
-		case __Parser::equal:
+		case __Lexer::equal:
 			v.type = __Variable::_bool;
 			v.value = new bool(x1 == x2);
 			break;
-		case __Parser::bigger:
+		case __Lexer::bigger:
 			v.type = __Variable::_bool;
 			v.value = new bool(x1 > x2);
 			break;
-		case __Parser::lower:
+		case __Lexer::lower:
 			v.type = __Variable::_bool;
 			v.value = new bool(x1 < x2);
 			break;
-		case __Parser::bigorequ:
+		case __Lexer::bigorequ:
 			v.type = __Variable::_bool;
 			v.value = new bool(x1 >= x2);
 			break;
-		case __Parser::loworequ:
+		case __Lexer::loworequ:
 			v.type = __Variable::_bool;
 			v.value = new bool(x1 <= x2);
 			break;
-		case __Parser::notequal:
+		case __Lexer::notequal:
 			v.type = __Variable::_bool;
 			v.value = new bool(x1 != x2);
 			break;
-		case __Parser::power:
+		case __Lexer::power:
 			v.type = __Variable::_float;
 			v.value = new double(pow(x1, x2));
 			break;
@@ -343,37 +343,37 @@ Variable Executer::RunOption(const Variable& _v1, const Variable& _v2, const std
 	else if (v1.type == __Variable::_string && v2.type == __Variable::_string)
 	{
 		std::string& x1 = *(std::string*)v1.value, & x2 = *(std::string*)v2.value;
-		__Parser::OptionType opty = __Parser::GetOptType(opt);
+		__Lexer::OptionType opty = __Lexer::GetOptType(opt);
 		switch (opty)
 		{
-		case __Parser::error_option:
+		case __Lexer::error_option:
 			v.type = __Variable::_error;
 			return v;
-		case __Parser::plus:
+		case __Lexer::plus:
 			v.type = __Variable::_string;
 			v.value = new std::string(x1 + x2);
 			break;
-		case __Parser::equal:
+		case __Lexer::equal:
 			v.type = __Variable::_bool;
 			v.value = new bool(x1 == x2);
 			break;
-		case __Parser::bigger:
+		case __Lexer::bigger:
 			v.type = __Variable::_bool;
 			v.value = new bool(x1 > x2);
 			break;
-		case __Parser::lower:
+		case __Lexer::lower:
 			v.type = __Variable::_bool;
 			v.value = new bool(x1 < x2);
 			break;
-		case __Parser::bigorequ:
+		case __Lexer::bigorequ:
 			v.type = __Variable::_bool;
 			v.value = new bool(x1 >= x2);
 			break;
-		case __Parser::loworequ:
+		case __Lexer::loworequ:
 			v.type = __Variable::_bool;
 			v.value = new bool(x1 <= x2);
 			break;
-		case __Parser::notequal:
+		case __Lexer::notequal:
 			v.type = __Variable::_bool;
 			v.value = new bool(x1 != x2);
 			break;
@@ -403,17 +403,17 @@ void Executer::Execute(const std::vector<Token>& tokens)
 	if (tokens.size() <= 0) return;
 	for (Token token : tokens)
 	{
-		if (token.type == __Parser::error)
+		if (token.type == __Lexer::error)
 		{
 			UI::PrintErr("Syntax error");
 			return;
 		}
 	}
-	if (tokens[0].type == __Parser::keyword)
+	if (tokens[0].type == __Lexer::keyword)
 	{
 		for (int i = 1; i < tokens.size(); ++i)
 		{
-			if (tokens[i].type == __Parser::keyword)
+			if (tokens[i].type == __Lexer::keyword)
 			{
 				UI::PrintErr("Format error");
 				return;
@@ -427,7 +427,7 @@ void Executer::Execute(const std::vector<Token>& tokens)
 
 		if (tokens[0].value == "let")
 		{
-			if (tokens.size() < 2 || tokens[1].type != __Parser::variable)
+			if (tokens.size() < 2 || tokens[1].type != __Lexer::variable)
 			{
 				UI::PrintErr("Cannot find the variable name");
 				return;
@@ -446,7 +446,7 @@ void Executer::Execute(const std::vector<Token>& tokens)
 				UI::PrintDefVar(name);
 				return;
 			}
-			if (tokens[2].type != __Parser::option || tokens[2].value != "=" || tokens.size() < 4)
+			if (tokens[2].type != __Lexer::option || tokens[2].value != "=" || tokens.size() < 4)
 			{
 				UI::PrintDefErr(name, "Cannot find the initial value of the variable");
 				return;

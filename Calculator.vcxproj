@@ -146,7 +146,7 @@
     <ClCompile Include="UI.cpp" />
     <ClCompile Include="Var.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Parser.cpp" />
+    <ClCompile Include="Lexer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Executer.h" />
@@ -155,7 +155,7 @@
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="UI.h" />
     <ClInclude Include="Var.h" />
-    <ClInclude Include="Parser.h" />
+    <ClInclude Include="Lexer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

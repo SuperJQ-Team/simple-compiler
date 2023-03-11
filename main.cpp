@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Parser.h"
+#include "Lexer.h"
 #include "Matrix.h"
 #include "Executer.h"
 #include "UI.h"
@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
 	while (1)
 	{
 		s = UI::GetInputLine();
-		vector<Token> tokens = Parser::getTokens(s);
+		vector<Token> tokens = Lexer::GetTokens(s);
 		UI::PrintTokens(tokens);
 		ext.Execute(tokens);
 		cout << "\n";

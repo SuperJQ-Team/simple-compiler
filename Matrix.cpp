@@ -9,7 +9,7 @@ Matrix::Matrix(int row, int col) : is_valid(true), row(row), col(col)
 	memset(buffer, 0, sizeof(double) * row * col);
 }
 
-Matrix::Matrix(const Matrix& m) :col(m.col), row(m.row), is_valid(true)
+Matrix::Matrix(const Matrix& m) :col(m.col), row(m.row), is_valid(m.is_valid)
 {
 	buffer = new double[col * row];
 	for (int i = 0; i < col * row; ++i)
@@ -119,6 +119,21 @@ Matrix::Matrix(const std::string& token) : row(0), col(0), buffer(nullptr)
 	}
 }
 
+Matrix& Matrix::operator = (const Matrix& m)
+{
+	if (this == &m) return *this;
+	delete buffer;
+	col = m.col;
+	row = m.row;
+	buffer = new double[row * col];
+	for (int i = 0; i < row * col; ++i)
+	{
+		buffer[i] = m.buffer[i];
+	}
+	is_valid = m.is_valid;
+	return *this;
+}
+
 Matrix operator * (const Matrix& ma, const Matrix& mb)
 {
 	if (ma.col != mb.row)
@@ -146,6 +161,21 @@ Matrix operator * (double k, const Matrix& m)
 	for (int i = 0; i < result.row * result.col; ++i)
 	{
 		result.buffer[i] *= k;
+	}
+	return result;
+}
+Matrix operator + (const Matrix& ma, const Matrix& mb)
+{
+	if (ma.row != mb.row || ma.col != mb.col)
+	{
+		Matrix result(1, 1);
+		result.is_valid = false;
+		return result;
+	}
+	Matrix result = ma;
+	for (int i = 0; i < result.row * result.col; ++i)
+	{
+		result.buffer[i] += mb.buffer[i];
 	}
 	return result;
 }

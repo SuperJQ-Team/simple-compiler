@@ -1,74 +1,69 @@
-#include "Parser.h"
+#include "Lexer.h"
 #include "Logger.h"
 
 #include <map>
 
-using namespace __Parser;
+using namespace __Lexer;
 
 const char sign[] = { '+','-','*','/','%','<','>','=','(',')','[',']','{','}',
 						'!','@','#','$','^','&','~','?',':',';','\'','"','\\','|' };
 
-const std::string optsig[] = { "+","-","*","/","%",">","<","=","(",")","[","]","{","}"
-					,"!","^","&","|","~","?",":",",","'","\"",
-					">=","<=","==","!=","||","&&",">>","<<",
-					"+=","-=","*=","/=","&=","|=","~=","^=",
-					"**","<<=",">>=" };
 const std::map<std::string, OptionType> options =
 {
-	{"+", plus},
-	{"-", minus},
-	{"*", times},
-	{"/", division},
-	{"%", modulo},
+	{"+",	plus},
+	{"-",	minus},
+	{"*",	times},
+	{"/",	division},
+	{"%",	modulo},
 
-	{"(", left_brack},
-	{")", right_brack},
+	{"(",	left_brack},
+	{")",	right_brack},
 
-	{"&", bitands},
-	{"|", bitors},
-	{"^", xors},
-	{"~", bitnot},
-	{">>",  right_move},
-	{"<<",  left_move},
+	{"&",	bitands},
+	{"|",	bitors},
+	{"^",	xors},
+	{"~",	bitnot},
+	{">>",	right_move},
+	{"<<",	left_move},
 
-	{"==", equal},
-	{">", bigger},
-	{"<", lower},
-	{">=", bigorequ},
-	{"<=", loworequ},
-	{"!=", notequal},
+	{"==",	equal},
+	{">",	bigger},
+	{"<",	lower},
+	{">=",	bigorequ},
+	{"<=",	loworequ},
+	{"!=",	notequal},
 
-	{"&&", logicand},
-	{"||", logicor},
-	{"!", logicnot},
+	{"&&",	logicand},
+	{"||",	logicor},
+	{"!",	logicnot},
 
-	{"=", is},
-	{"+=", plusis},
-	{"-=", minusis},
-	{"*=", timesis},
-	{"/=", divisionis},
-	{"%=", modulois},
-	{"&=", andis},
-	{"|=", oris},
-	{"^=", xoris},
-	{"~=", notis},
-	{"<<=", left_moveis},
-	{">>=", right_moveis},
+	{"=",	is},
+	{"+=",	plusis},
+	{"-=",	minusis},
+	{"*=",	timesis},
+	{"/=",	divisionis},
+	{"%=",	modulois},
+	{"&=",	andis},
+	{"|=",	oris},
+	{"^=",	xoris},
+	{"~=",	notis},
+	{"<<=",	left_moveis},
+	{">>=",	right_moveis},
 
-	{"[", left_block_brack},
-	{"]", right_block_brack},
+	{"[",	left_block_brack},
+	{"]",	right_block_brack},
 
-	{"?", question},
-	{":", colon},
+	{"?",	question},
+	{":",	colon},
 
-	{"**", power}
+	{"**",	power}
 };
-const std::string keywords[] = { "let", "def", "end", "if", "for", "do", "while"};
+const std::string keywords[] = { "let", "def", "end", "if", "for", "do", "while" };
 
 bool isoption(char c)
 {
 	for (char x : sign)
-		if (c == x)return true;
+		if (c == x) return true;
 	return false;
 }
 
@@ -79,7 +74,7 @@ bool isoperation(const std::string& last, char c)
 	return false;
 }
 
-bool isKeyword(const std::string& last_sign, char c)
+bool mayKeyword(const std::string& last_sign, char c)
 {
 	std::string temp = last_sign + c;
 	for (std::string s : keywords)
@@ -95,6 +90,17 @@ bool isKeyword(const std::string& last_sign, char c)
 	return false;
 }
 
+bool isKeyword(const std::string& sign)
+{
+	for (auto kw : keywords)
+	{
+		if (sign == kw) return true;
+	}
+	return false;
+}
+
+
+
 Token::Token() : type(error)
 {
 
@@ -105,7 +111,7 @@ Token::Token(TokenType type, const std::string& value) : type(type), value(value
 }
 
 
-OptionType __Parser::GetOptType(const std::string& c)
+OptionType __Lexer::GetOptType(const std::string& c)
 {
 	if (options.find(c) != options.end()) return options.at(c);
 	return error_option;
@@ -125,14 +131,14 @@ class Automaton
 		SPACE = 7,
 		KEYWORD = 8,
 		MATRIX = 9,
-		FINISH = 10,
+		BEFOROPT = 10,
 
 	};
-	State state_trans[255][255] = {
-		{START,		ERROR,	END,	NUMBER,		OPTION, VARIABLE,	STRING, SPACE,	KEYWORD,	MATRIX},
-		{ERROR,		ERROR,	ERROR,	ERROR,		ERROR,	ERROR,		ERROR,	ERROR,	ERROR,		ERROR},
-		{END,		END,	END,	END,		END,	END,		END,	END,	END,		END},
-		{NUMBER,	ERROR,	END,	NUMBER,		END,	ERROR,		ERROR,	END,	ERROR,		END},
+	const State state_trans[255][255] = {
+		{START,		ERROR,	END,	NUMBER,		OPTION, VARIABLE,	STRING, SPACE,	KEYWORD,	MATRIX,	BEFOROPT},
+		{ERROR,		ERROR,	ERROR,	ERROR,		ERROR,	ERROR,		ERROR,	ERROR,	ERROR,		ERROR,	ERROR},
+		{END,		END,	END,	END,		END,	END,		END,	END,	END,		END,	END},
+		{NUMBER,	ERROR,	END,	NUMBER,		END,	ERROR,		ERROR,	END,	ERROR,		END,	},
 		{OPTION,	ERROR,	END,	END,		ERROR,	END,		END,	END,	ERROR,		END},
 		{VARIABLE,	ERROR,	END,	VARIABLE,	END,	VARIABLE,	ERROR,	END,	ERROR,		END},
 		{STRING,	ERROR,	ERROR,	STRING,		STRING,	STRING,		END,	STRING,	STRING,		STRING},
@@ -148,17 +154,17 @@ class Automaton
 
 public:
 	Automaton(const std::string& str);
-	Token ParseToken();
-	bool parse_end;
+	Token GetNextToken();
+	bool lex_end;
 };
 Automaton::Automaton(const std::string& str)
 {
 	this->str = str;
 	this->str.push_back('\0');
 	this->it = this->str.begin();
-	parse_end = false;
+	lex_end = false;
 }
-Token Automaton::ParseToken()
+Token Automaton::GetNextToken()
 {
 	char str_sign = -1;
 	char last_sign = -1;
@@ -167,12 +173,17 @@ Token Automaton::ParseToken()
 	Token token;
 	while (it != str.end())
 	{
-		if (*it == '\0' || *it == ';')
+		printf("Now is at %c\n", *it);
+		if (*it == '\0' || *it == ';'||*it=='\n')
 		{
 			if (state == START || state == SPACE) token.type = end;
-			state = state_trans[state][END];
-			++it;
-			break;
+			if (state == STRING && *it == ';')state = STRING;
+			else
+			{
+				state = state_trans[state][END];
+				++it;
+				break;
+			}
 		}
 		else if (isdigit(*it) || *it == '.')
 		{
@@ -219,10 +230,11 @@ Token Automaton::ParseToken()
 			else
 			{
 				if (state == START || state == SPACE) token.type = option;
-				if (*it == '(' && state == VARIABLE && token.type == variable)
+				if (*it == '(' && ((state == VARIABLE && token.type == variable) || (state == KEYWORD && !isKeyword(token.value))))
 				{
 					token.type = function;
 					++it;
+					state = END;
 				}
 				if ((*it == '(' && state == OPTION) || last_sign == ')')state = END;
 				else state = state_trans[state][OPTION];
@@ -230,7 +242,7 @@ Token Automaton::ParseToken()
 		}
 		else if (isalpha(*it) || *it == '_')
 		{
-			if (isKeyword(token.value, *it))
+			if (mayKeyword(token.value, *it))
 			{
 				if (state == START || state == SPACE) token.type = keyword;
 				state = state_trans[state][KEYWORD];
@@ -262,20 +274,21 @@ Token Automaton::ParseToken()
 		++it;
 	}
 	if (state == ERROR)token.type = error;
-	if (it == str.end()) parse_end = true;
+	if (it == str.end()) lex_end = true;
 	if (left_bracks_num != 0) token.type = error;
+	if (token.type == keyword && !isKeyword(token.value)) token.type = variable;
 	return token;
 }
 
 
-std::vector<Token> Parser::getTokens(const std::string& input_string)
+std::vector<Token> Lexer::GetTokens(const std::string& input_string)
 {
 	std::vector<Token> tokens;
 	if (input_string.empty())return tokens;
 	Automaton automaton(input_string);
-	while (automaton.parse_end == false)
+	while (automaton.lex_end == false)
 	{
-		Token token = automaton.ParseToken();
+		Token token = automaton.GetNextToken();
 		tokens.emplace_back(token);
 		if (token.type == error) break;
 		if (token.type == function) tokens.emplace_back(Token(option, "("));
