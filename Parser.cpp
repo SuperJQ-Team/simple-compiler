@@ -167,12 +167,16 @@ Token Automaton::ParseToken()
 	Token token;
 	while (it != str.end())
 	{
-		if (*it == '\0' || *it == ';')
+		if (*it == '\0' || *it == ';'||*it=='\n')
 		{
 			if (state == START || state == SPACE) token.type = end;
-			state = state_trans[state][END];
-			++it;
-			break;
+			if (state == STRING && *it == ';')state = STRING;
+			else
+			{
+				state = state_trans[state][END];
+				++it;
+				break;
+			}
 		}
 		else if (isdigit(*it) || *it == '.')
 		{
