@@ -7,10 +7,10 @@ char sign[] = { '+','-','*','/','%','<','>','=','(',')','[',']','{','}',
 						'!','@','#','$','^','&','~','?',':',';','\'','"','\\','|' };
 
 std::string optsig[] = { "+","-","*","/","%",">","<","=","(",")","[","]","{","}"
-					,"!","^","&","|","~","?",":",";",",","'","\"",
-					">=","<=","==","!=","||","&&",
+					,"!","^","&","|","~","?",":",",","'","\"",
+					">=","<=","==","!=","||","&&",">>","<<",
 					"+=","-=","*=","/=","&=","|=","~=","^=",
-					"->","::" };
+					"**","<<=",">>=" };
 std::string defsgn[] = { "let", "def", "end" };
 
 bool isoption(char c)
@@ -44,7 +44,17 @@ bool isDefineSign(const std::string& last_sign, char c)
 	return false;
 }
 
-OptionType GetOptType(std::string c)
+Token::Token() : type(error)
+{
+
+}
+Token::Token(TokenType type, const std::string& value) : type(type), value(value)
+{
+
+}
+
+
+OptionType __Parser::GetOptType(std::string c)
 {
 	if (c == "+") return plus;
 	if (c == "-") return minus;
@@ -62,6 +72,17 @@ OptionType GetOptType(std::string c)
 	if (c == ">>") return right_move;
 	if (c == "<<") return left_move;
 
+	if (c == "==")return equal;
+	if (c == ">")return bigger;
+	if (c == "<")return lower;
+	if (c == ">=")return bigorequ;
+	if (c == "<=")return loworequ;
+	if (c == "!=")return notequal;
+
+	if (c == "&&")return logicand;
+	if (c == "||")return logicor;
+	if (c == "!")return logicnot;
+
 	if (c == "=") return is;
 	if (c == "+=") return plusis;
 	if (c == "-=") return minusis;
@@ -71,7 +92,18 @@ OptionType GetOptType(std::string c)
 	if (c == "&=") return andis;
 	if (c == "|=") return oris;
 	if (c == "^=") return xoris;
-	if (c == "~=") return right_brack;
+	if (c == "~=") return notis;
+	if (c == "<<=")return left_moveis;
+	if (c == ">>=")return right_moveis;
+
+	if (c == "[")return left_block_brack;
+	if (c == "]")return right_block_brack;
+
+	if (c == "?")return question;
+	if (c == ":")return colon;
+
+	if (c == "**")return power;
+
 	return error_option;
 }
 
@@ -89,6 +121,7 @@ class Automaton
 		SPACE = 7,
 		DEFINE = 8,
 		MATRIX = 9,
+		FINISH = 10,
 
 	};
 	State state_trans[255][255] = {
@@ -96,12 +129,12 @@ class Automaton
 		{ERROR,		ERROR,	ERROR,	ERROR,		ERROR,	ERROR,		ERROR,	ERROR,	ERROR,	ERROR},
 		{END,		END,	END,	END,		END,	END,		END,	END,	END,	END},
 		{NUMBER,	ERROR,	END,	NUMBER,		END,	ERROR,		ERROR,	END,	ERROR,	END},
-		{OPTION,	ERROR,	END,	END,		ERROR,	END,		STRING,	END,	ERROR,	END},
-		{VARIABLE,	ERROR,	END,	VARIABLE,	END,	VARIABLE,	STRING,	END,	ERROR,	END},
-		{STRING,	ERROR,	END,	STRING,		STRING,	STRING,		END,	STRING,	STRING,	STRING},
+		{OPTION,	ERROR,	END,	END,		ERROR,	END,		END,	END,	ERROR,	END},
+		{VARIABLE,	ERROR,	END,	VARIABLE,	END,	VARIABLE,	ERROR,	END,	ERROR,	END},
+		{STRING,	ERROR,	ERROR,	STRING,		STRING,	STRING,		END,	STRING,	STRING,	STRING},
 		{SPACE,		ERROR,	END,	NUMBER,		OPTION,	VARIABLE,	STRING,	SPACE,	DEFINE,	MATRIX},
 		{DEFINE,	ERROR,	END,	VARIABLE,	ERROR,	VARIABLE,	ERROR,	END,	DEFINE, ERROR},
-		{MATRIX,	ERROR,	END,	MATRIX,		ERROR,	ERROR,		ERROR,	MATRIX,	ERROR,	MATRIX}
+		{MATRIX,	ERROR,	END,	MATRIX,		ERROR,	ERROR,		ERROR,	MATRIX,	ERROR,	MATRIX},
 	};
 
 	std::string str;
@@ -117,19 +150,27 @@ public:
 Automaton::Automaton(const std::string& str)
 {
 	this->str = str;
+	this->str.push_back('\0');
 	this->it = this->str.begin();
 	parse_end = false;
 }
 Token Automaton::ParseToken()
 {
-	char str_sign = '\0';
-	char last_sign = '\0';
+	char str_sign = -1;
+	char last_sign = -1;
 	int left_bracks_num = 0;
 	state = START;
 	Token token;
 	while (it != str.end())
 	{
-		if (isdigit(*it) || *it == '.')
+		if (*it == '\0' || *it == ';')
+		{
+			if (state == START || state == SPACE) token.type = end;
+			state = state_trans[state][END];
+			++it;
+			break;
+		}
+		else if (isdigit(*it) || *it == '.')
 		{
 			if (state == START || state == SPACE) token.type = number;
 			state = state_trans[state][NUMBER];
@@ -158,11 +199,11 @@ Token Automaton::ParseToken()
 				token.type = string;
 				str_sign = *it;
 			}
-			if (*it != str_sign)
+			if (*it != str_sign && state == STRING)
 				state = state_trans[state][OPTION];
 			else
 				state = state_trans[state][STRING];
-			if (state == END) ++it;
+			if (state == END && *it == str_sign) ++it;
 		}
 		else if (isoption(*it))
 		{
@@ -196,7 +237,7 @@ Token Automaton::ParseToken()
 				state = state_trans[state][VARIABLE];
 			}
 		}
-		else if (*it == ' ' || *it == ',' || *it == ';')
+		else if (*it == ' ' || *it == ',')
 		{
 			state = state_trans[state][SPACE];
 		}
@@ -211,10 +252,12 @@ Token Automaton::ParseToken()
 		{
 			break;
 		}
-		if ((state == STRING && *it != str_sign) || (state != STRING && state != START && state != SPACE && *it != ' ')) token.value.push_back(*it);
+		if ((state == STRING && *it != str_sign) ||
+			(state != STRING && state != START && state != SPACE && *it != ' ')) token.value.push_back(*it);
 		last_sign = *it;
 		++it;
 	}
+	if (state == ERROR)token.type = error;
 	if (it == str.end()) parse_end = true;
 	if (left_bracks_num != 0) token.type = error;
 	return token;
@@ -224,12 +267,15 @@ Token Automaton::ParseToken()
 std::vector<Token> Parser::getTokens(const std::string& input_string)
 {
 	std::vector<Token> tokens;
+	if (input_string.empty())return tokens;
 	Automaton automaton(input_string);
 	while (automaton.parse_end == false)
 	{
 		Token token = automaton.ParseToken();
 		tokens.emplace_back(token);
 		if (token.type == error) break;
+		if (token.type == function) tokens.emplace_back(Token(option, "("));
 	}
 	return tokens;
 }
+

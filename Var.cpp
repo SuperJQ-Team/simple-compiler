@@ -9,14 +9,14 @@ Variable Variable::nul(_null);
 
 Variable::Variable()
 {
-	_type =  _null;
-	_val = nullptr;
+	type =  _null;
+	value = nullptr;
 }
 
-Variable::Variable(Type type) :_type(type)
+Variable::Variable(Type type) :type(type)
 {
 	if (type == _null || type == _error)
-		_val = nullptr;
+		value = nullptr;
 }
 
 Variable::Variable(const Token& token)
@@ -26,33 +26,37 @@ Variable::Variable(const Token& token)
 
 Variable::Variable(const Variable& var)
 {
-	_type = var._type;
-	if (_type == _null)
-		_val = nullptr;
-	if (_type == _int)
-		_val = new int(*(int*)(var._val));
-	if (_type == _float)
-		_val = new double(*(double*)(var._val));
-	if (_type == _string || _type == _definelog || _type == _varible)
-		_val = new std::string(*(std::string*)(var._val));
-	if (_type == _matrix)
-		_val = new Matrix(*(Matrix*)(var._val));
+	type = var.type;
+	if (type == _null)
+		value = nullptr;
+	if (type == _int)
+		value = new int(*(int*)(var.value));
+	if (type == _float)
+		value = new double(*(double*)(var.value));
+	if (type == _string || type == _definelog || type == _varible)
+		value = new std::string(*(std::string*)(var.value));
+	if (type == _matrix)
+		value = new Matrix(*(Matrix*)(var.value));
+	if (type == _bool)
+		value = new bool(*(bool*)(var.value));
 }
 
 Variable& Variable::operator=(const Variable& var)
 {
 	if (this == &var) return *this;
-	_type = var._type;
-	if (_type == _null)
-		_val = nullptr;
-	if (_type == _int)
-		_val = new int(*(int*)(var._val));
-	if (_type == _float)
-		_val = new double(*(double*)(var._val));
-	if (_type == _string || _type == _definelog || _type == _varible)
-		_val = new std::string(*(std::string*)(var._val));
-	if (_type == _matrix)
-		_val = new Matrix(*(Matrix*)(var._val));
+	type = var.type;
+	if (type == _null)
+		value = nullptr;
+	if (type == _int)
+		value = new int(*(int*)(var.value));
+	if (type == _float)
+		value = new double(*(double*)(var.value));
+	if (type == _string || type == _definelog || type == _varible)
+		value = new std::string(*(std::string*)(var.value));
+	if (type == _matrix)
+		value = new Matrix(*(Matrix*)(var.value));
+	if (type == _bool)
+		value = new bool(*(bool*)(var.value));
 
 	return *this;
 }
@@ -80,42 +84,42 @@ void Variable::set(const Token& token)
 		}
 		if (!ifd)
 		{
-			_type = _int;
-			_val = new int((int)val);
+			type = _int;
+			value = new int((int)val);
 		}
 		else
 		{
-			_type = _float;
-			_val = new double(val / ws);
+			type = _float;
+			value = new double(val / ws);
 		}
 	}
 	else if (token.type == __Parser::string)
 	{
-		_type = _string;
-		_val = new std::string(token.value);
+		type = _string;
+		value = new std::string(token.value);
 	}
 	else if (token.type == __Parser::matrix)
 	{
-		_type = _matrix;
-		_val = new Matrix(token.value);
+		type = _matrix;
+		value = new Matrix(token.value);
 	}
 	else if (token.type == __Parser::variable)
 	{
-		_type = _varible;
-		_val = new std::string(token.value);
+		type = _varible;
+		value = new std::string(token.value);
 	}
 	else
 	{
-		_type = _null;
-		_val = nullptr;
+		type = _null;
+		value = nullptr;
 	}
 }
 
 Variable Variable::deflog(const std::string& s)
 {
 	auto v = Variable();
-	v._type = _definelog;
-	v._val = new std::string(s);
+	v.type = _definelog;
+	v.value = new std::string(s);
 	return v;
 }
 

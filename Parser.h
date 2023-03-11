@@ -18,7 +18,8 @@ namespace __Parser {
 		variable = 3,
 		string = 4,
 		matrix = 5,
-		function = 6
+		function = 6,
+		end = 7,
 	};
 	enum OptionType
 	{
@@ -41,7 +42,7 @@ namespace __Parser {
 
 		equal = 13,
 		bigger = 14,
-		lowwer = 15,
+		lower = 15,
 		bigorequ = 16,
 		loworequ = 17,
 		notequal = 18,
@@ -63,11 +64,17 @@ namespace __Parser {
 
 		left_block_brack = 40,
 		right_block_brack = 41,
-		left_flower_brack = 42,
-		right_flower_brack = 43,
 
+		left_moveis = 42,
+		right_moveis=43,
 
+		question = 44,
+		colon = 45,
+
+		power = 46,
 	};
+
+	OptionType GetOptType(std::string c);
 }
 
 class Token
@@ -75,6 +82,8 @@ class Token
 public:
 	__Parser::TokenType type;
 	std::string value;
+	Token();
+	Token(__Parser::TokenType type, const std::string& value);
 };
 
 class Parser

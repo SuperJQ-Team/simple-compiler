@@ -39,9 +39,15 @@ void UI::Print(const std::string& str)
 	printf("\"%s\"", str.c_str());
 }
 
+void UI::Print(bool boolen)
+{
+	if (boolen)printf("True");
+	else printf("False");
+}
+
 void UI::Print(const Variable& var)
 {
-	switch (var._type)
+	switch (var.type)
 	{
 	case __Variable::_error:
 		printf("Error");
@@ -50,22 +56,25 @@ void UI::Print(const Variable& var)
 		printf("null");
 		break;
 	case __Variable::_int:
-		printf("%d", *(int*)var._val);
+		printf("%d", *(int*)var.value);
 		break;
 	case __Variable::_float:
-		printf("%lf", *(double*)var._val);
+		printf("%lf", *(double*)var.value);
 		break;
 	case __Variable::_string:
-		printf("%s", (*(std::string*)var._val).c_str());
+		printf("\"%s\"", (*(std::string*)var.value).c_str());
 		break;
 	case __Variable::_matrix:
-		Print(*(Matrix*)var._val);
+		Print(*(Matrix*)var.value);
+		break;
+	case __Variable::_bool:
+		Print(*(bool*)var.value);
 		break;
 	/*case __Variable::_definelog:
-		os << "varible " << *(std::string*)_val << " has been creat";
+		os << "varible " << *(std::string*)value << " has been creat";
 		break;
 	case __Variable::_varible:
-		os << "varible " << *(std::string*)_val << " = "; ex.GetValue(*(std::string*)this->_val).output(os, ex);
+		os << "varible " << *(std::string*)value << " = "; ex.GetValue(*(std::string*)this->value).output(os, ex);
 		break;*/
 	default:
 		break;
@@ -83,6 +92,7 @@ void UI::PrintToken(const Token& token)
 		if (t == string) return "string";
 		if (t == matrix) return "matrix";
 		if (t == function)return "function";
+		if (t == end)return "end";
 		return "unknown";
 	};
 	printf("%s, %s\n", getType(token.type), token.value.c_str());

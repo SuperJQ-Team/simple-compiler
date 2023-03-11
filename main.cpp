@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
 	{
 		s = UI::GetInputLine();
 		vector<Token> tokens = Parser::getTokens(s);
-		//UI::PrintTokens(tokens);
+		UI::PrintTokens(tokens);
 		ext.Execute(tokens);
 		cout << "\n";
 	}
