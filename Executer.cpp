@@ -409,11 +409,11 @@ void Executer::Execute(const std::vector<Token>& tokens)
 			return;
 		}
 	}
-	if (tokens[0].type == __Parser::define)
+	if (tokens[0].type == __Parser::keyword)
 	{
 		for (int i = 1; i < tokens.size(); ++i)
 		{
-			if (tokens[i].type == __Parser::define)
+			if (tokens[i].type == __Parser::keyword)
 			{
 				UI::PrintErr("Format error");
 				return;

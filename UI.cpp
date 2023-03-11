@@ -87,7 +87,7 @@ void UI::PrintToken(const Token& token)
 		if (t == error) return "error";
 		if (t == number) return "number";
 		if (t == option) return "option";
-		if (t == define) return "define";
+		if (t == keyword) return "keyword";
 		if (t == variable) return "variable";
 		if (t == string) return "string";
 		if (t == matrix) return "matrix";
