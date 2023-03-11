@@ -63,7 +63,7 @@ Variable& Variable::operator=(const Variable& var)
 
 void Variable::set(const Token& token)
 {
-	if (token.type == __Parser::number)
+	if (token.type == __Lexer::number)
 	{
 		double val = 0;
 		bool ifd = false;
@@ -93,17 +93,17 @@ void Variable::set(const Token& token)
 			value = new double(val / ws);
 		}
 	}
-	else if (token.type == __Parser::string)
+	else if (token.type == __Lexer::string)
 	{
 		type = _string;
 		value = new std::string(token.value);
 	}
-	else if (token.type == __Parser::matrix)
+	else if (token.type == __Lexer::matrix)
 	{
 		type = _matrix;
 		value = new Matrix(token.value);
 	}
-	else if (token.type == __Parser::variable)
+	else if (token.type == __Lexer::variable)
 	{
 		type = _varible;
 		value = new std::string(token.value);

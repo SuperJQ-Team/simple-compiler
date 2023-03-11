@@ -5,9 +5,9 @@
 #include <vector>
 
 class Token;
-class Parser;
+class Lexer;
 
-namespace __Parser {
+namespace __Lexer {
 
 	enum TokenType
 	{
@@ -80,14 +80,14 @@ namespace __Parser {
 class Token
 {
 public:
-	__Parser::TokenType type;
+	__Lexer::TokenType type;
 	std::string value;
 	Token();
-	Token(__Parser::TokenType type, const std::string& value);
+	Token(__Lexer::TokenType type, const std::string& value);
 };
 
-class Parser
+class Lexer
 {
 public:
-	static std::vector<Token> getTokens(const std::string& input_string);
+	static std::vector<Token> GetTokens(const std::string& input_string);
 };

@@ -21,7 +21,7 @@
     <ClCompile Include="Var.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Parser.cpp">
+    <ClCompile Include="Lexer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Logger.cpp">
@@ -44,7 +44,7 @@
     <ClInclude Include="Var.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Parser.h">
+    <ClInclude Include="Lexer.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Logger.h">

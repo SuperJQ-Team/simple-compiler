@@ -1,7 +1,7 @@
 #include "UI.h"
 #include "Matrix.h"
 #include "Var.h"
-#include "Parser.h"
+#include "Lexer.h"
 
 #include <iostream>
 
@@ -82,7 +82,7 @@ void UI::Print(const Variable& var)
 }
 void UI::PrintToken(const Token& token)
 {
-	using namespace __Parser;
+	using namespace __Lexer;
 	auto getType = [](TokenType t) {
 		if (t == error) return "error";
 		if (t == number) return "number";

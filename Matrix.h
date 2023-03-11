@@ -14,10 +14,13 @@ public:
 	Matrix(int row, int col);
 	Matrix(const Matrix&);
 	
-	static friend void UI::Print(const Matrix& matrix);
+	Matrix& operator = (const Matrix& m);
+	
 	friend Matrix operator * (const Matrix& ma, const Matrix& mb);
 	friend Matrix operator * (double k, const Matrix& m);
 	friend Matrix operator + (const Matrix& ma, const Matrix& mb);
+
+	static friend void UI::Print(const Matrix& matrix);
 };
 
 Matrix operator * (const Matrix& ma, const Matrix& mb);
