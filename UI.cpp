@@ -2,6 +2,7 @@
 #include "Matrix.h"
 #include "Var.h"
 #include "Lexer.h"
+#include "Token.h"
 
 #include <iostream>
 
@@ -84,16 +85,16 @@ void UI::PrintToken(const Token& token)
 {
 	using namespace __Lexer;
 	auto getType = [](TokenType t) {
-		if (t == error) return "error";
-		if (t == number) return "number";
-		if (t == option) return "option";
-		if (t == keyword) return "keyword";
-		if (t == variable) return "variable";
-		if (t == string) return "string";
-		if (t == matrix) return "matrix";
-		if (t == function)return "function";
-		if (t == end)return "end";
-		if (t == beforpot)return "beforpot";
+		if (t == TokenType::Error) return "error";
+		if (t == TokenType::Number) return "number";
+		if (t == TokenType::Operator) return "option";
+		if (t == TokenType::Keyword) return "keyword";
+		if (t == TokenType::Variable) return "variable";
+		if (t == TokenType::String) return "string";
+		if (t == TokenType::Matrix) return "matrix";
+		if (t == TokenType::Function)return "function";
+		if (t == TokenType::End)return "end";
+		if (t == TokenType::BeforeOp)return "beforpot";
 		return "unknown";
 	};
 	printf("%s, %s\n", getType(token.type), token.value.c_str());

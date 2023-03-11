@@ -10,53 +10,53 @@ const char sign[] = { '+','-','*','/','%','<','>','=','(',')','[',']','{','}',
 
 const std::map<std::string, OptionType> options =
 {
-	{"+",	plus},
-	{"-",	minus},
-	{"*",	times},
-	{"/",	division},
-	{"%",	modulo},
+	{"+",	OptionType::plus},
+	{"-",	OptionType::minus},
+	{"*",	OptionType::times},
+	{"/",	OptionType::division},
+	{"%",	OptionType::modulo},
 
-	{"(",	left_brack},
-	{")",	right_brack},
+	{"(",	OptionType::left_brack},
+	{")",	OptionType::right_brack},
 
-	{"&",	bitands},
-	{"|",	bitors},
-	{"^",	xors},
-	{"~",	bitnot},
-	{">>",	right_move},
-	{"<<",	left_move},
+	{"&",	OptionType::bitands},
+	{"|",	OptionType::bitors},
+	{"^",	OptionType::xors},
+	{"~",	OptionType::bitnot},
+	{">>",	OptionType::right_move},
+	{"<<",	OptionType::left_move},
 
-	{"==",	equal},
-	{">",	bigger},
-	{"<",	lower},
-	{">=",	bigorequ},
-	{"<=",	loworequ},
-	{"!=",	notequal},
+	{"==",	OptionType::equal},
+	{">",	OptionType::bigger},
+	{"<",	OptionType::lower},
+	{">=",	OptionType::bigorequ},
+	{"<=",	OptionType::loworequ},
+	{"!=",	OptionType::notequal},
 
-	{"&&",	logicand},
-	{"||",	logicor},
-	{"!",	logicnot},
+	{"&&",	OptionType::logicand},
+	{"||",	OptionType::logicor},
+	{"!",	OptionType::logicnot},
 
-	{"=",	is},
-	{"+=",	plusis},
-	{"-=",	minusis},
-	{"*=",	timesis},
-	{"/=",	divisionis},
-	{"%=",	modulois},
-	{"&=",	andis},
-	{"|=",	oris},
-	{"^=",	xoris},
-	{"~=",	notis},
-	{"<<=",	left_moveis},
-	{">>=",	right_moveis},
+	{"=",	OptionType::is},
+	{"+=",	OptionType::plusis},
+	{"-=",	OptionType::minusis},
+	{"*=",	OptionType::timesis},
+	{"/=",	OptionType::divisionis},
+	{"%=",	OptionType::modulois},
+	{"&=",	OptionType::andis},
+	{"|=",	OptionType::oris},
+	{"^=",	OptionType::xoris},
+	{"~=",	OptionType::notis},
+	{"<<=",	OptionType::left_moveis},
+	{">>=",	OptionType::right_moveis},
 
-	{"[",	left_block_brack},
-	{"]",	right_block_brack},
+	{"[",	OptionType::left_block_brack},
+	{"]",	OptionType::right_block_brack},
 
-	{"?",	question},
-	{":",	colon},
+	{"?",	OptionType::question},
+	{":",	OptionType::colon},
 
-	{"**",	power}
+	{"**",	OptionType::power}
 };
 const std::string keywords[] = { "let", "def", "end", "if", "for", "do", "while" };
 
@@ -105,20 +105,13 @@ bool mayBeforeOpt(const std::string& sign)
 
 
 
-Token::Token() : type(error)
-{
 
-}
-Token::Token(TokenType type, const std::string& value) : type(type), value(value)
-{
-
-}
 
 
 OptionType __Lexer::GetOptType(const std::string& c)
 {
 	if (options.find(c) != options.end()) return options.at(c);
-	return error_option;
+	return OptionType::error_option;
 }
 
 class Automaton
@@ -153,7 +146,7 @@ class Automaton
 
 	std::string str;
 	std::string::iterator it;
-	__Lexer::TokenType last_token = __Lexer::error;
+	TokenType last_token = TokenType::Error;
 
 	State state;
 
@@ -182,7 +175,7 @@ Token Automaton::GetNextToken()
 	{
 		if (*it == '\0' || *it == ';' || *it == '\n')
 		{
-			if (state == START || state == SPACE) token.type = end;
+			if (state == START || state == SPACE) token.type = TokenType::End;
 			if (state == STRING && *it == ';')state = STRING;
 			else
 			{
@@ -193,12 +186,12 @@ Token Automaton::GetNextToken()
 		}
 		else if (isdigit(*it) || *it == '.')
 		{
-			if (state == START || state == SPACE) token.type = number;
+			if (state == START || state == SPACE) token.type = TokenType::Number;
 			state = state_trans[state][NUMBER];
 		}
 		else if (*it == '{' || *it == '}')
 		{
-			if (state == START || state == SPACE) token.type = matrix;
+			if (state == START || state == SPACE) token.type = TokenType::Matrix;
 			if (*it == '{') ++left_bracks_num;
 			else if (*it == '}')
 			{
@@ -217,7 +210,7 @@ Token Automaton::GetNextToken()
 		{
 			if (state == START || state == SPACE)
 			{
-				token.type = string;
+				token.type = TokenType::String;
 				str_sign = *it;
 			}
 			if (*it != str_sign && state == STRING)
@@ -228,24 +221,24 @@ Token Automaton::GetNextToken()
 		}
 		else if (issign(*it))
 		{
-			if ((last_token == __Lexer::option || last_token == __Lexer::beforpot || last_token == __Lexer::keyword || last_token == __Lexer::error)
+			if ((last_token == TokenType::Operator || last_token == TokenType::BeforeOp || last_token == TokenType::Keyword || last_token == TokenType::Error)
 				&& mayBeforeOpt(token.value + *it))
 			{
-				if (state == START || state == SPACE || token.type == option) token.type = beforpot;
+				if (state == START || state == SPACE || token.type == TokenType::Operator) token.type = TokenType::BeforeOp;
 				state = OPTION;
 			}
-			else if ((last_token != __Lexer::option && last_token != __Lexer::beforpot && last_token != __Lexer::keyword && last_token != __Lexer::error)
+			else if ((last_token != TokenType::Operator && last_token != TokenType::BeforeOp && last_token != TokenType::Keyword && last_token != TokenType::Error)
 				&& (isoperation(token.value + *it) && !mayBeforeOpt(token.value + *it)))
 			{
-				if (state == START || state == SPACE) token.type = option;
+				if (state == START || state == SPACE) token.type = TokenType::Operator;
 				state = OPTION;
 			}
 			else
 			{
-				if (state == START || state == SPACE) token.type = option;
-				if (*it == '(' && ((state == VARIABLE && token.type == variable) || (state == KEYWORD && !isKeyword(token.value))))
+				if (state == START || state == SPACE) token.type = TokenType::Operator;
+				if (*it == '(' && ((state == VARIABLE && token.type == TokenType::Variable) || (state == KEYWORD && !isKeyword(token.value))))
 				{
-					token.type = function;
+					token.type = TokenType::Function;
 					++it;
 					state = END;
 				}
@@ -257,12 +250,12 @@ Token Automaton::GetNextToken()
 		{
 			if (mayKeyword(token.value, *it))
 			{
-				if (state == START || state == SPACE) token.type = keyword;
+				if (state == START || state == SPACE) token.type = TokenType::Keyword;
 				state = state_trans[state][KEYWORD];
 			}
 			else
 			{
-				if (state == START || state == SPACE || state == KEYWORD) token.type = variable;
+				if (state == START || state == SPACE || state == KEYWORD) token.type = TokenType::Variable;
 				state = state_trans[state][VARIABLE];
 			}
 		}
@@ -273,7 +266,7 @@ Token Automaton::GetNextToken()
 
 		if (state == ERROR)
 		{
-			token.type = error;
+			token.type = TokenType::Error;
 			return token;
 		}
 
@@ -286,10 +279,10 @@ Token Automaton::GetNextToken()
 		last_sign = *it;
 		++it;
 	}
-	if (state == ERROR)token.type = error;
+	if (state == ERROR)token.type = TokenType::Error;
 	if (it == str.end()) lex_end = true;
-	if (left_bracks_num != 0) token.type = error;
-	if (token.type == keyword && !isKeyword(token.value)) token.type = variable;
+	if (left_bracks_num != 0) token.type = TokenType::Error;
+	if (token.type == TokenType::Keyword && !isKeyword(token.value)) token.type = TokenType::Variable;
 	last_token = token.type;
 	return token;
 }
@@ -304,8 +297,8 @@ std::vector<Token> Lexer::GetTokens(const std::string& input_string)
 	{
 		Token token = automaton.GetNextToken();
 		tokens.emplace_back(token);
-		if (token.type == error) break;
-		if (token.type == function) tokens.emplace_back(Token(option, "("));
+		if (token.type == TokenType::Error) break;
+		if (token.type == TokenType::Function) tokens.emplace_back(Token(TokenType::Operator, "("));
 	}
 	return tokens;
 }
