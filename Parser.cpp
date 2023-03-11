@@ -1,17 +1,69 @@
 #include "Parser.h"
 #include "Logger.h"
 
+#include <map>
+
 using namespace __Parser;
 
-char sign[] = { '+','-','*','/','%','<','>','=','(',')','[',']','{','}',
+const char sign[] = { '+','-','*','/','%','<','>','=','(',')','[',']','{','}',
 						'!','@','#','$','^','&','~','?',':',';','\'','"','\\','|' };
 
-std::string optsig[] = { "+","-","*","/","%",">","<","=","(",")","[","]","{","}"
+const std::string optsig[] = { "+","-","*","/","%",">","<","=","(",")","[","]","{","}"
 					,"!","^","&","|","~","?",":",",","'","\"",
 					">=","<=","==","!=","||","&&",">>","<<",
 					"+=","-=","*=","/=","&=","|=","~=","^=",
 					"**","<<=",">>=" };
-std::string defsgn[] = { "let", "def", "end" };
+const std::map<std::string, OptionType> options =
+{
+	{"+", plus},
+	{"-", minus},
+	{"*", times},
+	{"/", division},
+	{"%", modulo},
+
+	{"(", left_brack},
+	{")", right_brack},
+
+	{"&", bitands},
+	{"|", bitors},
+	{"^", xors},
+	{"~", bitnot},
+	{">>",  right_move},
+	{"<<",  left_move},
+
+	{"==", equal},
+	{">", bigger},
+	{"<", lower},
+	{">=", bigorequ},
+	{"<=", loworequ},
+	{"!=", notequal},
+
+	{"&&", logicand},
+	{"||", logicor},
+	{"!", logicnot},
+
+	{"=", is},
+	{"+=", plusis},
+	{"-=", minusis},
+	{"*=", timesis},
+	{"/=", divisionis},
+	{"%=", modulois},
+	{"&=", andis},
+	{"|=", oris},
+	{"^=", xoris},
+	{"~=", notis},
+	{"<<=", left_moveis},
+	{">>=", right_moveis},
+
+	{"[", left_block_brack},
+	{"]", right_block_brack},
+
+	{"?", question},
+	{":", colon},
+
+	{"**", power}
+};
+const std::string keywords[] = { "let", "def", "end", "if", "for", "do", "while"};
 
 bool isoption(char c)
 {
@@ -20,18 +72,17 @@ bool isoption(char c)
 	return false;
 }
 
-bool isoperation(std::string last, char c)
+bool isoperation(const std::string& last, char c)
 {
-	last.push_back(c);
-	for (std::string x : optsig)
-		if (last == x)return true;
+	std::string temp = last + c;
+	if (options.find(temp) != options.end()) return true;
 	return false;
 }
 
-bool isDefineSign(const std::string& last_sign, char c)
+bool isKeyword(const std::string& last_sign, char c)
 {
 	std::string temp = last_sign + c;
-	for (std::string s : defsgn)
+	for (std::string s : keywords)
 	{
 		if (temp.length() > s.length()) continue;
 		bool ok = true;
@@ -54,56 +105,9 @@ Token::Token(TokenType type, const std::string& value) : type(type), value(value
 }
 
 
-OptionType __Parser::GetOptType(std::string c)
+OptionType __Parser::GetOptType(const std::string& c)
 {
-	if (c == "+") return plus;
-	if (c == "-") return minus;
-	if (c == "*") return times;
-	if (c == "/") return division;
-	if (c == "%") return modulo;
-
-	if (c == "(") return left_brack;
-	if (c == ")") return right_brack;
-
-	if (c == "&") return bitands;
-	if (c == "|") return bitors;
-	if (c == "^") return xors;
-	if (c == "~") return bitnot;
-	if (c == ">>") return right_move;
-	if (c == "<<") return left_move;
-
-	if (c == "==")return equal;
-	if (c == ">")return bigger;
-	if (c == "<")return lower;
-	if (c == ">=")return bigorequ;
-	if (c == "<=")return loworequ;
-	if (c == "!=")return notequal;
-
-	if (c == "&&")return logicand;
-	if (c == "||")return logicor;
-	if (c == "!")return logicnot;
-
-	if (c == "=") return is;
-	if (c == "+=") return plusis;
-	if (c == "-=") return minusis;
-	if (c == "*=") return timesis;
-	if (c == "/=") return divisionis;
-	if (c == "%=") return modulois;
-	if (c == "&=") return andis;
-	if (c == "|=") return oris;
-	if (c == "^=") return xoris;
-	if (c == "~=") return notis;
-	if (c == "<<=")return left_moveis;
-	if (c == ">>=")return right_moveis;
-
-	if (c == "[")return left_block_brack;
-	if (c == "]")return right_block_brack;
-
-	if (c == "?")return question;
-	if (c == ":")return colon;
-
-	if (c == "**")return power;
-
+	if (options.find(c) != options.end()) return options.at(c);
 	return error_option;
 }
 
@@ -226,9 +230,9 @@ Token Automaton::ParseToken()
 		}
 		else if (isalpha(*it) || *it == '_')
 		{
-			if (isDefineSign(token.value, *it))
+			if (isKeyword(token.value, *it))
 			{
-				if (state == START || state == SPACE) token.type = define;
+				if (state == START || state == SPACE) token.type = keyword;
 				state = state_trans[state][KEYWORD];
 			}
 			else

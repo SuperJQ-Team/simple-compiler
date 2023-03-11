@@ -14,7 +14,7 @@ namespace __Parser {
 		error = -1,
 		number = 0,
 		option = 1,
-		define = 2,
+		keyword = 2,
 		variable = 3,
 		string = 4,
 		matrix = 5,
@@ -74,7 +74,7 @@ namespace __Parser {
 		power = 46,
 	};
 
-	OptionType GetOptType(std::string c);
+	OptionType GetOptType(const std::string& c);
 }
 
 class Token
