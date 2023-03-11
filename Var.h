@@ -16,7 +16,8 @@ namespace __Variable {
 		_string = 3,
 		_matrix = 4,
 		_definelog = 5,
-		_varible = 6
+		_varible = 6,
+		_bool = 7
 	};
 }
 
@@ -24,9 +25,9 @@ class Variable
 {
 public:
 
-	void* _val = nullptr;
-	__Variable::Type _type = __Variable::_null;
-	inline ~Variable() { if (_val != nullptr)delete _val; }
+	void* value = nullptr;
+	__Variable::Type type = __Variable::_null;
+	inline ~Variable() { if (value != nullptr)delete value; }
 
 	Variable();
 	Variable(__Variable::Type type);

@@ -17,6 +17,7 @@ public:
 	static void Print(double number);
 	static void Print(const Matrix& matrix);
 	static void Print(const std::string& str);
+	static void Print(bool boolen);
 
 	static void Print(const Variable& var);
 

@@ -109,8 +109,13 @@ Variable Executer::Calculate(const std::vector<Token>& tokens, int index)
 	std::vector<Token> backtokens;
 	for (; index < tokens.size(); ++index)
 	{
+		if (tokens[index].type == __Parser::end)
+		{
+			break;
+		}
 		if (tokens[index].type == __Parser::option)
 		{
+
 			if (tokens[index].value == ")")
 			{
 				while (!opts.empty() && opts.top().value != "(")
@@ -159,7 +164,8 @@ Variable Executer::Calculate(const std::vector<Token>& tokens, int index)
 			vars.push(v);
 		}
 	}
-	if (vars.top()._type == __Variable::_varible)return GetValue(*(std::string*)vars.top()._val);
+	if (vars.size() != 1) return Variable::err;
+	if (vars.top().type == __Variable::_varible)return GetValue(*(std::string*)vars.top().value);
 	return vars.top();
 }
 bool Executer::isOccured(const std::string& name)
@@ -168,14 +174,15 @@ bool Executer::isOccured(const std::string& name)
 	return false;
 }
 
+
 Variable Executer::RunOption(const Variable& _v1, const Variable& _v2, const std::string& opt)
 {
 	Variable v1 = _v1, v2 = _v2;
 	if (isvol(opt))
 	{
-		if (v1._type != __Variable::_varible) return Variable::err;
-		if (v2._type == __Variable::_varible) v2 = GetValue(*(std::string*)(v2._val));
-		if (opt == "=")GetValue(*(std::string*)(v1._val)) = v2;
+		if (v1.type != __Variable::_varible) return Variable::err;
+		if (v2.type == __Variable::_varible) v2 = GetValue(*(std::string*)(v2.value));
+		if (opt == "=")GetValue(*(std::string*)(v1.value)) = v2;
 		else
 		{
 			return Variable::err;
@@ -183,28 +190,202 @@ Variable Executer::RunOption(const Variable& _v1, const Variable& _v2, const std
 		return _v1;
 	}
 	Variable v;
-	if (v1._type == __Variable::_varible) v1 = GetValue(*(std::string*)(v1._val));
-	if (v2._type == __Variable::_varible) v2 = GetValue(*(std::string*)(v2._val));
-	if (v1._type == __Variable::_int && v2._type == __Variable::_int)
+	if (v1.type == __Variable::_varible) v1 = GetValue(*(std::string*)(v1.value));
+	if (v2.type == __Variable::_varible) v2 = GetValue(*(std::string*)(v2.value));
+	if (v1.type == __Variable::_int && v2.type == __Variable::_int)
 	{
-		v._type = __Variable::_int;
-		v._val = new int;
-		if (opt == "+")*(int*)v._val = *(int*)v1._val + *(int*)v2._val;
-		else if (opt == "-")*(int*)v._val = *(int*)v1._val - *(int*)v2._val;
-		else if (opt == "*")*(int*)v._val = *(int*)v1._val * *(int*)v2._val;
-		else if (opt == "/")*(int*)v._val = *(int*)v1._val / *(int*)v2._val;
-		else if (opt == "%")*(int*)v._val = *(int*)v1._val % *(int*)v2._val;
-		else
+		int x1 = *(int*)v1.value, x2 = *(int*)v2.value;
+
+		__Parser::OptionType opty = __Parser::GetOptType(opt);
+		switch (opty)
 		{
-			v._type = __Variable::_error;
-			delete v._val;
-			v._val = nullptr;
+		case __Parser::error_option:
+			v.type = __Variable::_error;
+			return v;
+			break;
+		case __Parser::plus:
+			v.type = __Variable::_int;
+			v.value = new int(x1 + x2);
+			break;
+		case __Parser::minus:
+			v.type = __Variable::_int;
+			v.value = new int(x1 - x2);
+			break;
+		case __Parser::times:
+			v.type = __Variable::_int;
+			v.value = new int(x1 * x2);
+			break;
+		case __Parser::division:
+			v.type = __Variable::_int;
+			v.value = new int(x1 / x2);
+			break;
+		case __Parser::modulo:
+			v.type = __Variable::_int;
+			v.value = new int(x1 % x2);
+			break;
+		case __Parser::bitands:
+			v.type = __Variable::_int;
+			v.value = new int(x1 & x2);
+			break;
+		case __Parser::bitors:
+			v.type = __Variable::_int;
+			v.value = new int(x1 | x2);
+			break;
+		case __Parser::xors:
+			v.type = __Variable::_int;
+			v.value = new int(x1 ^ x2);
+			break;
+		case __Parser::right_move:
+			v.type = __Variable::_int;
+			v.value = new int(x1 >> x2);
+			break;
+		case __Parser::left_move:
+			v.type = __Variable::_int;
+			v.value = new int(x1 << x2);
+			break;
+		case __Parser::equal:
+			v.type = __Variable::_bool;
+			v.value = new bool(x1 == x2);
+			break;
+		case __Parser::bigger:
+			v.type = __Variable::_bool;
+			v.value = new bool(x1 > x2);
+			break;
+		case __Parser::lower:
+			v.type = __Variable::_bool;
+			v.value = new bool(x1 < x2);
+			break;
+		case __Parser::bigorequ:
+			v.type = __Variable::_bool;
+			v.value = new bool(x1 >= x2);
+			break;
+		case __Parser::loworequ:
+			v.type = __Variable::_bool;
+			v.value = new bool(x1 <= x2);
+			break;
+		case __Parser::notequal:
+			v.type = __Variable::_bool;
+			v.value = new bool(x1 != x2);
+			break;
+		case __Parser::power:
+			v.type = __Variable::_int;
+			v.value = new int(pow(x1, x2));
+			break;
+		default:
+			v.type = __Variable::_error;
+			return v;
+		}
+
+	}
+	else if ((v1.type == __Variable::_float || v1.type == __Variable::_int) && (v2.type == __Variable::_float || v2.type == __Variable::_int))
+	{
+		double x1 = 0, x2 = 0;
+		if (v1.type == __Variable::_float)x1 = *(double*)v1.value;
+		else x1 = (double)*(int*)v1.value;
+		if (v2.type == __Variable::_float)x2 = *(double*)v2.value;
+		else x2 = (double)*(int*)v2.value;
+
+		__Parser::OptionType opty = __Parser::GetOptType(opt);
+		switch (opty)
+		{
+		case __Parser::error_option:
+			v.type = __Variable::_error;
+			return v;
+		case __Parser::plus:
+			v.type = __Variable::_float;
+			v.value = new double(x1 + x2);
+			break;
+		case __Parser::minus:
+			v.type = __Variable::_float;
+			v.value = new double(x1 - x2);
+			break;
+		case __Parser::times:
+			v.type = __Variable::_float;
+			v.value = new double(x1 * x2);
+			break;
+		case __Parser::division:
+			v.type = __Variable::_float;
+			v.value = new double(x1 / x2);
+			break;
+		case __Parser::equal:
+			v.type = __Variable::_bool;
+			v.value = new bool(x1 == x2);
+			break;
+		case __Parser::bigger:
+			v.type = __Variable::_bool;
+			v.value = new bool(x1 > x2);
+			break;
+		case __Parser::lower:
+			v.type = __Variable::_bool;
+			v.value = new bool(x1 < x2);
+			break;
+		case __Parser::bigorequ:
+			v.type = __Variable::_bool;
+			v.value = new bool(x1 >= x2);
+			break;
+		case __Parser::loworequ:
+			v.type = __Variable::_bool;
+			v.value = new bool(x1 <= x2);
+			break;
+		case __Parser::notequal:
+			v.type = __Variable::_bool;
+			v.value = new bool(x1 != x2);
+			break;
+		case __Parser::power:
+			v.type = __Variable::_float;
+			v.value = new double(pow(x1, x2));
+			break;
+		default:
+			v.type = __Variable::_error;
+			return v;
+		}
+	}
+	else if (v1.type == __Variable::_string && v2.type == __Variable::_string)
+	{
+		std::string& x1 = *(std::string*)v1.value, & x2 = *(std::string*)v2.value;
+		__Parser::OptionType opty = __Parser::GetOptType(opt);
+		switch (opty)
+		{
+		case __Parser::error_option:
+			v.type = __Variable::_error;
+			return v;
+		case __Parser::plus:
+			v.type = __Variable::_string;
+			v.value = new std::string(x1 + x2);
+			break;
+		case __Parser::equal:
+			v.type = __Variable::_bool;
+			v.value = new bool(x1 == x2);
+			break;
+		case __Parser::bigger:
+			v.type = __Variable::_bool;
+			v.value = new bool(x1 > x2);
+			break;
+		case __Parser::lower:
+			v.type = __Variable::_bool;
+			v.value = new bool(x1 < x2);
+			break;
+		case __Parser::bigorequ:
+			v.type = __Variable::_bool;
+			v.value = new bool(x1 >= x2);
+			break;
+		case __Parser::loworequ:
+			v.type = __Variable::_bool;
+			v.value = new bool(x1 <= x2);
+			break;
+		case __Parser::notequal:
+			v.type = __Variable::_bool;
+			v.value = new bool(x1 != x2);
+			break;
+		default:
+			v.type = __Variable::_error;
+			return v;
 		}
 	}
 	else
 	{
-		v._type = __Variable::_error;
-		v._val = nullptr;
+		v.type = __Variable::_error;
+		v.value = nullptr;
 	}
 	return v;
 }
@@ -220,6 +401,14 @@ Variable& Executer::GetValue(const std::string& s)
 void Executer::Execute(const std::vector<Token>& tokens)
 {
 	if (tokens.size() <= 0) return;
+	for (Token token : tokens)
+	{
+		if (token.type == __Parser::error)
+		{
+			UI::PrintErr("Syntax error");
+			return;
+		}
+	}
 	if (tokens[0].type == __Parser::define)
 	{
 		for (int i = 1; i < tokens.size(); ++i)
@@ -263,7 +452,7 @@ void Executer::Execute(const std::vector<Token>& tokens)
 				return;
 			}
 			Variable var = Calculate(tokens, 3);
-			if (var._type == __Variable::_error)
+			if (var.type == __Variable::_error)
 			{
 				UI::PrintDefErr(name, "Initial error");
 				return;
@@ -285,12 +474,12 @@ void Executer::Execute(const std::vector<Token>& tokens)
 	}
 
 	Variable var = Calculate(tokens, 0);
-	if (var._type == __Variable::_error)
+	if (var.type == __Variable::_error)
 	{
 		UI::PrintErr("Cannot calculate");
 		return;
 	}
 
-	if (var._type == __Variable::_varible) UI::Print(var_map[*(std::string*)var._val]);
+	if (var.type == __Variable::_varible) UI::Print(var_map[*(std::string*)var.value]);
 	else UI::Print(var);
 }

@@ -18,7 +18,8 @@ namespace __Parser {
 		variable = 3,
 		string = 4,
 		matrix = 5,
-		function = 6
+		function = 6,
+		end = 7,
 	};
 	enum OptionType
 	{
@@ -70,7 +71,7 @@ namespace __Parser {
 		question = 44,
 		colon = 45,
 
-		power = 49,
+		power = 46,
 	};
 
 	OptionType GetOptType(std::string c);
@@ -81,6 +82,8 @@ class Token
 public:
 	__Parser::TokenType type;
 	std::string value;
+	Token();
+	Token(__Parser::TokenType type, const std::string& value);
 };
 
 class Parser
