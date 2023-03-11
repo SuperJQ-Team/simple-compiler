@@ -60,18 +60,17 @@ const std::map<std::string, OptionType> options =
 };
 const std::string keywords[] = { "let", "def", "end", "if", "for", "do", "while" };
 
-bool isoption(char c)
+
+bool issign(char c)
 {
 	for (char x : sign)
 		if (c == x) return true;
 	return false;
 }
 
-bool isoperation(const std::string& last, char c)
+bool isoperation(const std::string& last)
 {
-	std::string temp = last + c;
-	if (options.find(temp) != options.end()) return true;
-	return false;
+	return options.find(last) != options.end();
 }
 
 bool mayKeyword(const std::string& last_sign, char c)
@@ -97,6 +96,11 @@ bool isKeyword(const std::string& sign)
 		if (sign == kw) return true;
 	}
 	return false;
+}
+
+bool mayBeforeOpt(const std::string& sign)
+{
+	return sign == "-" || sign == "~" || sign == "!";
 }
 
 
@@ -139,7 +143,7 @@ class Automaton
 		{ERROR,		ERROR,	ERROR,	ERROR,		ERROR,	ERROR,		ERROR,	ERROR,	ERROR,		ERROR,	ERROR},
 		{END,		END,	END,	END,		END,	END,		END,	END,	END,		END,	END},
 		{NUMBER,	ERROR,	END,	NUMBER,		END,	ERROR,		ERROR,	END,	ERROR,		END,	},
-		{OPTION,	ERROR,	END,	END,		ERROR,	END,		END,	END,	ERROR,		END},
+		{OPTION,	ERROR,	END,	END,		END,	END,		END,	END,	ERROR,		END},
 		{VARIABLE,	ERROR,	END,	VARIABLE,	END,	VARIABLE,	ERROR,	END,	ERROR,		END},
 		{STRING,	ERROR,	ERROR,	STRING,		STRING,	STRING,		END,	STRING,	STRING,		STRING},
 		{SPACE,		ERROR,	END,	NUMBER,		OPTION,	VARIABLE,	STRING,	SPACE,	KEYWORD,	MATRIX},
@@ -149,6 +153,7 @@ class Automaton
 
 	std::string str;
 	std::string::iterator it;
+	__Lexer::TokenType last_token = __Lexer::error;
 
 	State state;
 
@@ -157,6 +162,7 @@ public:
 	Token GetNextToken();
 	bool lex_end;
 };
+
 Automaton::Automaton(const std::string& str)
 {
 	this->str = str;
@@ -164,6 +170,7 @@ Automaton::Automaton(const std::string& str)
 	this->it = this->str.begin();
 	lex_end = false;
 }
+
 Token Automaton::GetNextToken()
 {
 	char str_sign = -1;
@@ -173,8 +180,7 @@ Token Automaton::GetNextToken()
 	Token token;
 	while (it != str.end())
 	{
-		printf("Now is at %c\n", *it);
-		if (*it == '\0' || *it == ';'||*it=='\n')
+		if (*it == '\0' || *it == ';' || *it == '\n')
 		{
 			if (state == START || state == SPACE) token.type = end;
 			if (state == STRING && *it == ';')state = STRING;
@@ -220,9 +226,16 @@ Token Automaton::GetNextToken()
 				state = state_trans[state][STRING];
 			if (state == END && *it == str_sign) ++it;
 		}
-		else if (isoption(*it))
+		else if (issign(*it))
 		{
-			if (isoperation(token.value, *it))
+			if ((last_token == __Lexer::option || last_token == __Lexer::beforpot || last_token == __Lexer::keyword || last_token == __Lexer::error)
+				&& mayBeforeOpt(token.value + *it))
+			{
+				if (state == START || state == SPACE || token.type == option) token.type = beforpot;
+				state = OPTION;
+			}
+			else if ((last_token != __Lexer::option && last_token != __Lexer::beforpot && last_token != __Lexer::keyword && last_token != __Lexer::error)
+				&& (isoperation(token.value + *it) && !mayBeforeOpt(token.value + *it)))
 			{
 				if (state == START || state == SPACE) token.type = option;
 				state = OPTION;
@@ -277,6 +290,7 @@ Token Automaton::GetNextToken()
 	if (it == str.end()) lex_end = true;
 	if (left_bracks_num != 0) token.type = error;
 	if (token.type == keyword && !isKeyword(token.value)) token.type = variable;
+	last_token = token.type;
 	return token;
 }
 

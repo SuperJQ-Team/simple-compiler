@@ -443,12 +443,15 @@ Variable Executer::RunOption(const Variable& _v1, const Variable& _v2, const std
 		case __Lexer::logicand:
 			v.type = __Variable::_bool;
 			v.value = new bool(x1 && x2);
+			break;
 		case __Lexer::logicor:
 			v.type = __Variable::_bool;
 			v.value = new bool(x1 || x2);
+			break;
 		case __Lexer::xors:
 			v.type = __Variable::_bool;
 			v.value = new bool(x1 ^ x2);
+			break;
 		default:
 			v.type = __Variable::_error;
 			return v;

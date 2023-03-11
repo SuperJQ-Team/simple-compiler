@@ -20,6 +20,7 @@ namespace __Lexer {
 		matrix = 5,
 		function = 6,
 		end = 7,
+		beforpot = 8,
 	};
 	enum OptionType
 	{
@@ -66,7 +67,7 @@ namespace __Lexer {
 		right_block_brack = 41,
 
 		left_moveis = 42,
-		right_moveis=43,
+		right_moveis = 43,
 
 		question = 44,
 		colon = 45,
