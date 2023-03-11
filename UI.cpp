@@ -70,12 +70,12 @@ void UI::Print(const Variable& var)
 	case __Variable::_bool:
 		Print(*(bool*)var.value);
 		break;
-	/*case __Variable::_definelog:
-		os << "varible " << *(std::string*)value << " has been creat";
-		break;
-	case __Variable::_varible:
-		os << "varible " << *(std::string*)value << " = "; ex.GetValue(*(std::string*)this->value).output(os, ex);
-		break;*/
+	//case __Variable::_definelog:
+	//	os << "varible " << *(std::string*)value << " has been creat";
+	//	break;
+	//case __Variable::_varible:
+	//	os << "varible " << *(std::string*)value << " = "; ex.GetValue(*(std::string*)this->value).output(os, ex);
+	//	break;
 	default:
 		break;
 	}
@@ -93,6 +93,7 @@ void UI::PrintToken(const Token& token)
 		if (t == matrix) return "matrix";
 		if (t == function)return "function";
 		if (t == end)return "end";
+		if (t == beforpot)return "beforpot";
 		return "unknown";
 	};
 	printf("%s, %s\n", getType(token.type), token.value.c_str());
