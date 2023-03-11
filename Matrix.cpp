@@ -179,3 +179,18 @@ Matrix operator + (const Matrix& ma, const Matrix& mb)
 	}
 	return result;
 }
+Matrix operator - (const Matrix& ma, const Matrix& mb)
+{
+	if (ma.row != mb.row || ma.col != mb.col)
+	{
+		Matrix result(1, 1);
+		result.is_valid = false;
+		return result;
+	}
+	Matrix result = ma;
+	for (int i = 0; i < result.row * result.col; ++i)
+	{
+		result.buffer[i] -= mb.buffer[i];
+	}
+	return result;
+}

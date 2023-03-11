@@ -1,7 +1,9 @@
 #include "Executer.h"
+
+#include <stack>
 #include "Logger.h"
 #include "UI.h"
-#include <stack>
+#include "Matrix.h"
 
 int GetPriority(const std::string& opt)
 {
@@ -377,6 +379,76 @@ Variable Executer::RunOption(const Variable& _v1, const Variable& _v2, const std
 			v.type = __Variable::_bool;
 			v.value = new bool(x1 != x2);
 			break;
+		default:
+			v.type = __Variable::_error;
+			return v;
+		}
+	}
+	else if (v1.type == __Variable::_matrix && v2.type == __Variable::_matrix)
+	{
+		Matrix& x1 = *(Matrix*)v1.value, & x2 = *(Matrix*)v2.value;
+		__Lexer::OptionType opty = __Lexer::GetOptType(opt);
+		switch (opty)
+		{
+		case __Lexer::error_option:
+			v.type = __Variable::_error;
+			return v;
+		case __Lexer::plus:
+			v.type = __Variable::_matrix;
+			v.value = new Matrix(x1 + x2);
+			break;
+		case __Lexer::minus:
+			v.type = __Variable::_matrix;
+			v.value = new Matrix(x1 - x2);
+			break;
+		case __Lexer::times:
+			v.type = __Variable::_matrix;
+			v.value = new Matrix(x1 * x2);
+			break;
+		default:
+			v.type = __Variable::_error;
+			return v;
+		}
+	}
+	else if ((v1.type == __Variable::_int || v1.type == __Variable::_float) && v2.type == __Variable::_matrix)
+	{
+		double x1;
+		if (v1.type == __Variable::_int)x1 = *(int*)v1.value;
+		else x1 = *(double*)v1.value;
+		Matrix& x2 = *(Matrix*)v2.value;
+		__Lexer::OptionType opty = __Lexer::GetOptType(opt);
+		switch (opty)
+		{
+		case __Lexer::error_option:
+			v.type = __Variable::_error;
+			return v;
+		case __Lexer::times:
+			v.type = __Variable::_matrix;
+			v.value = new Matrix(x1 * x2);
+			break;
+		default:
+			v.type = __Variable::_error;
+			return v;
+		}
+	}
+	else if (v1.type == __Variable::_bool && v2.type == __Variable::_bool)
+	{
+		bool x1 = *(bool*)v1.value, & x2 = *(bool*)v2.value;
+		__Lexer::OptionType opty = __Lexer::GetOptType(opt);
+		switch (opty)
+		{
+		case __Lexer::error_option:
+			v.type = __Variable::_error;
+			return v;
+		case __Lexer::logicand:
+			v.type = __Variable::_bool;
+			v.value = new bool(x1 && x2);
+		case __Lexer::logicor:
+			v.type = __Variable::_bool;
+			v.value = new bool(x1 || x2);
+		case __Lexer::xors:
+			v.type = __Variable::_bool;
+			v.value = new bool(x1 ^ x2);
 		default:
 			v.type = __Variable::_error;
 			return v;
