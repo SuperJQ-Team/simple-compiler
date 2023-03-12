@@ -131,7 +131,7 @@ class Automaton
 	};
 	enum CharType
 	{
-		ERROR = -1,
+		Error = -1,
 		Space = 1,
 		Digit,
 		Alpha,
