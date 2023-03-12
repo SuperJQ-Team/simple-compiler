@@ -142,6 +142,7 @@
     <ClCompile Include="ASTNode.cpp" />
     <ClCompile Include="Executer.cpp" />
     <ClCompile Include="Function.cpp" />
+    <ClCompile Include="Interface.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="Parser.cpp" />
@@ -155,6 +156,7 @@
     <ClInclude Include="ASTNode.h" />
     <ClInclude Include="Executer.h" />
     <ClInclude Include="Function.h" />
+    <ClInclude Include="Interface.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="Parser.h" />
