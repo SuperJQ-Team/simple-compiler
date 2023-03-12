@@ -2,11 +2,12 @@
 #include "Logger.h"
 
 #include <map>
+#include <set>
 
 using namespace __Lexer;
 
-const char sign[] = { '+','-','*','/','%','<','>','=','(',')','[',']','{','}',
-						'!','@','#','$','^','&','~','?',':',';','\'','"','\\','|' };
+const std::set<char> sign = {'+','-','*','/','%','<','>','=','(',')','[',']','{','}',
+						'!','@','#','$','^','&','~','?',':',';','\'','\\','|' };
 
 const std::map<std::string, OptionType> options =
 {
@@ -119,49 +120,124 @@ class Automaton
 	enum State
 	{
 		START = 0,
-		ERROR = 1,
-		END = 2,
-		NUMBER = 3,
-		OPTION = 4,
-		VARIABLE = 5,
-		STRING = 6,
-		SPACE = 7,
-		KEYWORD = 8,
-		MATRIX = 9,
-		BEFOROPT = 10,
-
+		ERROR,
+		END,
+		NUMBER,
+		OPERATOR,
+		VARIABLE,
+		STRING,
+		KEYWORD,
+		MATRIX
+	};
+	enum CharType
+	{
+		ERROR = -1,
+		Space = 1,
+		Digit,
+		Alpha,
+		LeftParen,			// (
+		RightParen,			// )
+		LeftFlowerParen,	// {
+		RightFlowerParen,	// }
+		Quotation,			// "
+		Comma,				// ,
+		OPERATOR
+	};
+	const State state_t[255][255] = {
+		//			Space,	Digit,		Alpha,		(,		),		{,		},		",		,,		Operator	
+		{START,		START,	NUMBER,		KEYWORD,	END,	END,	MATRIX,	ERROR,	STRING,	END,	OPERATOR},
+		{ERROR,		ERROR,	ERROR,		ERROR,		ERROR,	ERROR,	ERROR,	ERROR,	ERROR,	END,	ERROR},
+		{END,		END,	END,		END,		END,	END,	END,	END,	END,	END,	END},
+		{NUMBER,	END,	NUMBER,		END,		END,	END,	END,	END,	END,	END,	END},
+		{OPERATOR,	END,	END,		END,		END,	END,	END,	END,	END,	END,	OPERATOR},
+		{VARIABLE,	END,	VARIABLE,	VARIABLE,	END,	END,	END,	END,	END,	END,	END},
+		{STRING,	STRING,	STRING,		STRING,		STRING,	STRING,	STRING,	STRING,	END,	STRING,	STRING},
+		{KEYWORD,	END,	KEYWORD,	KEYWORD,	END,	END,	END,	END,	END,	END,	END},
+		{MATRIX,	MATRIX,	MATRIX,		MATRIX,		MATRIX,	MATRIX,	MATRIX,	MATRIX,	ERROR,	MATRIX,	MATRIX}
 	};
 	const State state_trans[255][255] = {
-		{START,		ERROR,	END,	NUMBER,		OPTION, VARIABLE,	STRING, SPACE,	KEYWORD,	MATRIX,	BEFOROPT},
-		{ERROR,		ERROR,	ERROR,	ERROR,		ERROR,	ERROR,		ERROR,	ERROR,	ERROR,		ERROR,	ERROR},
-		{END,		END,	END,	END,		END,	END,		END,	END,	END,		END,	END},
-		{NUMBER,	ERROR,	END,	NUMBER,		END,	ERROR,		ERROR,	END,	ERROR,		END,	},
-		{OPTION,	ERROR,	END,	END,		END,	END,		END,	END,	ERROR,		END},
-		{VARIABLE,	ERROR,	END,	VARIABLE,	END,	VARIABLE,	ERROR,	END,	ERROR,		END},
-		{STRING,	ERROR,	ERROR,	STRING,		STRING,	STRING,		END,	STRING,	STRING,		STRING},
-		{SPACE,		ERROR,	END,	NUMBER,		OPTION,	VARIABLE,	STRING,	SPACE,	KEYWORD,	MATRIX},
-		{KEYWORD,	ERROR,	END,	VARIABLE,	ERROR,	VARIABLE,	ERROR,	END,	KEYWORD,	ERROR},
-		{MATRIX,	ERROR,	END,	MATRIX,		ERROR,	ERROR,		ERROR,	MATRIX,	ERROR,		MATRIX},
+		{START,		ERROR,	END,	NUMBER,		OPERATOR, VARIABLE,	STRING, Space,	Keyword,	Matrix},
+		{Error,		Error,	Error,	Error,		Error,	Error,		Error,	Error,	Error,		Error},
+		{End,		End,	End,	End,		End,	End,		End,	End,	End,		End},
+		{Number,	Error,	End,	Number,		End,	Error,		Error,	End,	Error,		End},
+		{Operator,	Error,	End,	End,		End,	End,		End,	End,	Error,		End},
+		{Variable,	Error,	End,	Variable,	End,	Variable,	Error,	End,	Error,		End},
+		{String,	Error,	Error,	String,		String,	String,		End,	String,	String,		String},
+		{Keyword,	Error,	End,	Variable,	Error,	Variable,	Error,	End,	Keyword,	Error},
+		{Matrix,	Error,	End,	Matrix,		Error,	Error,		Error,	Matrix,	Error,		Matrix},
 	};
+	
 
 	std::string str;
 	std::string::iterator it;
+	int current;
 	TokenType last_token = TokenType::Error;
 
 	State state;
 
+	CharType getCharType(char c);
+
+	char advance();
+	char previous();
+
+	
+
 public:
 	Automaton(const std::string& str);
 	Token GetNextToken();
-	bool lex_end;
+
+	bool isAtEnd();
 };
+
+Automaton::CharType Automaton::getCharType(char c)
+{
+	if (c == ' ') return CharType::Space;
+	if (isdigit(c)) return CharType::Digit;
+	if (isalpha(c)) return CharType::Alpha;
+	if (c == '(') return CharType::LeftParen;
+	if (c == ')') return CharType::RightParen;
+	if (c == '{') return CharType::LeftFlowerParen;
+	if (c == '}') return CharType::RightFlowerParen;
+	if (c == '"') return CharType::Quotation;
+	if (c == ',') return CharType::Comma;
+	if (sign.find(c) != sign.end()) return CharType::OPERATOR;
+	return CharType::ERROR;
+}
+
+char Automaton::advance()
+{
+	if (current != str.size()) ++current;
+	return str[current];
+}
+char Automaton::previous()
+{
+	return str[current - 1];
+}
+bool Automaton::isAtEnd()
+{
+	return current == str.size();
+}
 
 Automaton::Automaton(const std::string& str)
 {
 	this->str = str;
-	this->str.push_back('\0');
 	this->it = this->str.begin();
-	lex_end = false;
+	current = 0;
+}
+
+Token Automaton::GetNextToken()
+{
+	state = START;
+	Token token;
+	while (!isAtEnd())
+	{
+		if (state == START)
+		{
+			char c = advance();
+			CharType type = getCharType(c);
+			state = state_t[state][type];
+		}
+	}
 }
 
 Token Automaton::GetNextToken()
@@ -175,7 +251,7 @@ Token Automaton::GetNextToken()
 	{
 		if (*it == '\0' || *it == ';' || *it == '\n')
 		{
-			if (state == START || state == SPACE) token.type = TokenType::End;
+			if (state == START || state == Space) token.type = TokenType::End;
 			if (state == STRING && *it == ';')state = STRING;
 			else
 			{
@@ -186,12 +262,12 @@ Token Automaton::GetNextToken()
 		}
 		else if (isdigit(*it) || *it == '.')
 		{
-			if (state == START || state == SPACE) token.type = TokenType::Number;
+			if (state == START || state == Space) token.type = TokenType::Number;
 			state = state_trans[state][NUMBER];
 		}
 		else if (*it == '{' || *it == '}')
 		{
-			if (state == START || state == SPACE) token.type = TokenType::Matrix;
+			if (state == START || state == Space) token.type = TokenType::Matrix;
 			if (*it == '{') ++left_bracks_num;
 			else if (*it == '}')
 			{
@@ -208,13 +284,13 @@ Token Automaton::GetNextToken()
 		}
 		else if (*it == '"' || *it == '\'')
 		{
-			if (state == START || state == SPACE)
+			if (state == START || state == Space)
 			{
 				token.type = TokenType::String;
 				str_sign = *it;
 			}
 			if (*it != str_sign && state == STRING)
-				state = state_trans[state][OPTION];
+				state = state_trans[state][OPERATOR];
 			else
 				state = state_trans[state][STRING];
 			if (state == END && *it == str_sign) ++it;
@@ -224,44 +300,44 @@ Token Automaton::GetNextToken()
 			if ((last_token == TokenType::Operator || last_token == TokenType::BeforeOp || last_token == TokenType::Keyword || last_token == TokenType::Error)
 				&& mayBeforeOpt(token.value + *it))
 			{
-				if (state == START || state == SPACE || token.type == TokenType::Operator) token.type = TokenType::BeforeOp;
-				state = OPTION;
+				if (state == START || state == Space || token.type == TokenType::Operator) token.type = TokenType::BeforeOp;
+				state = OPERATOR;
 			}
 			else if ((last_token != TokenType::Operator && last_token != TokenType::BeforeOp && last_token != TokenType::Keyword && last_token != TokenType::Error)
 				&& (isoperation(token.value + *it) && !mayBeforeOpt(token.value + *it)))
 			{
-				if (state == START || state == SPACE) token.type = TokenType::Operator;
-				state = OPTION;
+				if (state == START || state == Space) token.type = TokenType::Operator;
+				state = OPERATOR;
 			}
 			else
 			{
-				if (state == START || state == SPACE) token.type = TokenType::Operator;
+				if (state == START || state == Space) token.type = TokenType::Operator;
 				if (*it == '(' && ((state == VARIABLE && token.type == TokenType::Variable) || (state == KEYWORD && !isKeyword(token.value))))
 				{
 					token.type = TokenType::Function;
 					++it;
 					state = END;
 				}
-				if ((*it == '(' && state == OPTION) || last_sign == ')')state = END;
-				else state = state_trans[state][OPTION];
+				if ((*it == '(' && state == OPERATOR) || last_sign == ')')state = END;
+				else state = state_trans[state][OPERATOR];
 			}
 		}
 		else if (isalpha(*it) || *it == '_')
 		{
 			if (mayKeyword(token.value, *it))
 			{
-				if (state == START || state == SPACE) token.type = TokenType::Keyword;
+				if (state == START || state == Space) token.type = TokenType::Keyword;
 				state = state_trans[state][KEYWORD];
 			}
 			else
 			{
-				if (state == START || state == SPACE || state == KEYWORD) token.type = TokenType::Variable;
+				if (state == START || state == Space || state == KEYWORD) token.type = TokenType::Variable;
 				state = state_trans[state][VARIABLE];
 			}
 		}
 		else if (*it == ' ' || *it == ',')
 		{
-			state = state_trans[state][SPACE];
+			state = state_trans[state][Space];
 		}
 
 		if (state == ERROR)
@@ -275,7 +351,7 @@ Token Automaton::GetNextToken()
 			break;
 		}
 		if ((state == STRING && *it != str_sign) ||
-			(state != STRING && state != START && state != SPACE && *it != ' ')) token.value.push_back(*it);
+			(state != STRING && state != START && state != Space && *it != ' ')) token.value.push_back(*it);
 		last_sign = *it;
 		++it;
 	}
@@ -288,12 +364,12 @@ Token Automaton::GetNextToken()
 }
 
 
-std::vector<Token> Lexer::GetTokens(const std::string& input_string)
+std::vector<Token> Lexer::GetTokens(const std::string& target)
 {
 	std::vector<Token> tokens;
-	if (input_string.empty())return tokens;
-	Automaton automaton(input_string);
-	while (automaton.lex_end == false)
+	if (target.empty())return tokens;
+	Automaton automaton(target);
+	while (automaton.isAtEnd())
 	{
 		Token token = automaton.GetNextToken();
 		tokens.emplace_back(token);

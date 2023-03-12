@@ -24,8 +24,11 @@ class Token
 public:
 	TokenType type;
 	std::string value;
+	
 	Token();
 	Token(TokenType type, const std::string& value);
+	
+	void SetType(TokenType type);
 };
 
 
