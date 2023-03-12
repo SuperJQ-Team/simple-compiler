@@ -16,8 +16,10 @@ std::string UI::GetInputLine()
 {
 	os << ">>> ";
 	static std::string temp;
-	std::getline(std::cin, temp);
-	return temp;
+	if (std::getline(std::cin, temp))
+		return temp;
+	else
+		return "\xFF";
 }
 
 void UI::Print(int number)
