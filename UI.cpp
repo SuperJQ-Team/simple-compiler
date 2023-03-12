@@ -24,6 +24,11 @@ void UI::Print(double number)
 }
 void UI::Print(const Matrix& matrix)
 {
+	if (!matrix.is_valid)
+	{
+		PrintErr("This matrix is invalid");
+		return;
+	}
 	printf("Matrix %d * %d: \n", matrix.row, matrix.col);
 	for (int i = 0; i < matrix.row; ++i)
 	{
