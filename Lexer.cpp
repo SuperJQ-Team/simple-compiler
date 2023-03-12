@@ -260,14 +260,18 @@ Token Automaton::GetNextToken()
 				if (lfpnum <= 0) return Token::error;
 				--lfpnum;
 
-				if (lfpnum == 0) state = END;
+				if (lfpnum == 0)
+				{
+					token.value.push_back('}');
+					state = END;
+				}
 			}
 			// else do nothing
 		}
 
 		if (state == END)
 		{
-			previous();
+			if (last_state != MATRIX) previous();
 			break;
 		}
 		if (!isspace(c)) token.value.push_back(c);
