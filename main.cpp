@@ -15,7 +15,6 @@ int main(int argc, char* argv[])
 	{
 		s = UI::GetInputLine();
 		vector<Token> tokens = Lexer::GetTokens(s);
-		UI::PrintTokens(tokens);
 		ext.Execute(tokens);
 		cout << "\n";
 	}
