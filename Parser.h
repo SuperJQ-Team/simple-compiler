@@ -31,5 +31,5 @@ private:
     Token advance();
     Token previous();
 
-    bool isAtEnd();
+    bool IsAtEnd();
 };

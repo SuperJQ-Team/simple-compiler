@@ -9,7 +9,7 @@ using namespace __Lexer;
 const std::set<char> sign = {'+','-','*','/','%','<','>','=','(',')','[',']','{','}',
 						'!','@','#','$','^','&','~','?',':',';','\'','\\','|' };
 
-const std::map<std::string, OptionType> options =
+const std::map<std::string, OptionType> operators =
 {
 	{"+",	OptionType::plus},
 	{"-",	OptionType::minus},
@@ -68,26 +68,9 @@ bool issign(char c)
 		if (c == x) return true;
 	return false;
 }
-
-bool isoperation(const std::string& last)
+bool isoperator(const std::string& last)
 {
-	return options.find(last) != options.end();
-}
-
-bool mayKeyword(const std::string& last_sign, char c)
-{
-	std::string temp = last_sign + c;
-	for (std::string s : keywords)
-	{
-		if (temp.length() > s.length()) continue;
-		bool ok = true;
-		for (int i = 0; i < temp.length(); ++i)
-		{
-			if (temp[i] != s[i]) ok = false;
-		}
-		if (ok) return true;
-	}
-	return false;
+	return operators.find(last) != operators.end();
 }
 
 bool isKeyword(const std::string& sign)
@@ -99,19 +82,13 @@ bool isKeyword(const std::string& sign)
 	return false;
 }
 
-bool mayBeforeOpt(const std::string& sign)
-{
-	return sign == "-" || sign == "~" || sign == "!";
-}
-
-
 
 
 
 
 OptionType __Lexer::GetOptType(const std::string& c)
 {
-	if (options.find(c) != options.end()) return options.at(c);
+	if (operators.find(c) != operators.end()) return operators.at(c);
 	return OptionType::error_option;
 }
 
@@ -126,7 +103,6 @@ class Automaton
 		OPERATOR,
 		VARIABLE,
 		STRING,
-		KEYWORD,
 		MATRIX
 	};
 	enum CharType
@@ -141,46 +117,30 @@ class Automaton
 		RightFlowerParen,	// }
 		Quotation,			// "
 		Comma,				// ,
-		OPERATOR
+		Operator
 	};
-	const State state_t[255][255] = {
+	const State state_trans[255][255] = {
 		//			Space,	Digit,		Alpha,		(,		),		{,		},		",		,,		Operator	
-		{START,		START,	NUMBER,		KEYWORD,	END,	END,	MATRIX,	ERROR,	STRING,	END,	OPERATOR},
+		{START,		START,	NUMBER,		VARIABLE,	END,	END,	MATRIX,	ERROR,	STRING,	END,	OPERATOR},
 		{ERROR,		ERROR,	ERROR,		ERROR,		ERROR,	ERROR,	ERROR,	ERROR,	ERROR,	END,	ERROR},
 		{END,		END,	END,		END,		END,	END,	END,	END,	END,	END,	END},
 		{NUMBER,	END,	NUMBER,		END,		END,	END,	END,	END,	END,	END,	END},
 		{OPERATOR,	END,	END,		END,		END,	END,	END,	END,	END,	END,	OPERATOR},
 		{VARIABLE,	END,	VARIABLE,	VARIABLE,	END,	END,	END,	END,	END,	END,	END},
 		{STRING,	STRING,	STRING,		STRING,		STRING,	STRING,	STRING,	STRING,	END,	STRING,	STRING},
-		{KEYWORD,	END,	KEYWORD,	KEYWORD,	END,	END,	END,	END,	END,	END,	END},
 		{MATRIX,	MATRIX,	MATRIX,		MATRIX,		MATRIX,	MATRIX,	MATRIX,	MATRIX,	ERROR,	MATRIX,	MATRIX}
 	};
-	const State state_trans[255][255] = {
-		{START,		ERROR,	END,	NUMBER,		OPERATOR, VARIABLE,	STRING, Space,	Keyword,	Matrix},
-		{Error,		Error,	Error,	Error,		Error,	Error,		Error,	Error,	Error,		Error},
-		{End,		End,	End,	End,		End,	End,		End,	End,	End,		End},
-		{Number,	Error,	End,	Number,		End,	Error,		Error,	End,	Error,		End},
-		{Operator,	Error,	End,	End,		End,	End,		End,	End,	Error,		End},
-		{Variable,	Error,	End,	Variable,	End,	Variable,	Error,	End,	Error,		End},
-		{String,	Error,	Error,	String,		String,	String,		End,	String,	String,		String},
-		{Keyword,	Error,	End,	Variable,	Error,	Variable,	Error,	End,	Keyword,	Error},
-		{Matrix,	Error,	End,	Matrix,		Error,	Error,		Error,	Matrix,	Error,		Matrix},
-	};
-	
 
 	std::string str;
-	std::string::iterator it;
 	int current;
 	TokenType last_token = TokenType::Error;
-
-	State state;
 
 	CharType getCharType(char c);
 
 	char advance();
 	char previous();
 
-	
+	static TokenType getTokenType(State state, const Token& token);
 
 public:
 	Automaton(const std::string& str);
@@ -191,23 +151,23 @@ public:
 
 Automaton::CharType Automaton::getCharType(char c)
 {
-	if (c == ' ') return CharType::Space;
-	if (isdigit(c)) return CharType::Digit;
-	if (isalpha(c)) return CharType::Alpha;
-	if (c == '(') return CharType::LeftParen;
-	if (c == ')') return CharType::RightParen;
-	if (c == '{') return CharType::LeftFlowerParen;
-	if (c == '}') return CharType::RightFlowerParen;
-	if (c == '"') return CharType::Quotation;
-	if (c == ',') return CharType::Comma;
-	if (sign.find(c) != sign.end()) return CharType::OPERATOR;
-	return CharType::ERROR;
+	if (c == ' ') return Space;
+	if (isdigit(c)) return Digit;
+	if (isalpha(c)) return Alpha;
+	if (c == '(') return LeftParen;
+	if (c == ')') return RightParen;
+	if (c == '{') return LeftFlowerParen;
+	if (c == '}') return RightFlowerParen;
+	if (c == '"') return Quotation;
+	if (c == ',') return Comma;
+	if (sign.find(c) != sign.end()) return CharType::Operator;
+	return CharType::Error;
 }
 
 char Automaton::advance()
 {
 	if (current != str.size()) ++current;
-	return str[current];
+	return str[current - 1];
 }
 char Automaton::previous()
 {
@@ -218,148 +178,100 @@ bool Automaton::isAtEnd()
 	return current == str.size();
 }
 
+TokenType Automaton::getTokenType(State state, const Token& token)
+{
+	if (state == ERROR) return TokenType::Error;
+
+	if (state == NUMBER) return TokenType::Number;
+	if (state == OPERATOR) return TokenType::Operator;
+	if (state == MATRIX) return TokenType::Matrix;
+	if (state == STRING) return TokenType::String;
+	
+	if (state == VARIABLE)
+	{
+		if (isKeyword(token.value)) return TokenType::Keyword;
+		return TokenType::Variable;
+	}
+
+	if (state == START)
+	{
+		if (token.value == "(") return TokenType::LeftParen;
+		if (token.value == ")") return TokenType::RightParen;
+		if (token.value == ",") return TokenType::Comma;
+		return TokenType::Error;
+	}
+
+	return TokenType::Error;
+}
+
 Automaton::Automaton(const std::string& str)
 {
 	this->str = str;
-	this->it = this->str.begin();
 	current = 0;
 }
 
 Token Automaton::GetNextToken()
 {
-	state = START;
+	// number of left flower paren(s)
+	int lfpnum = 0;
+	char quot_type = '\0';
+	State state = START, last_state = START;
 	Token token;
 	while (!isAtEnd())
 	{
-		if (state == START)
-		{
-			char c = advance();
-			CharType type = getCharType(c);
-			state = state_t[state][type];
-		}
-	}
-}
+		char c = advance();
+		CharType type = getCharType(c);
 
-Token Automaton::GetNextToken()
-{
-	char str_sign = -1;
-	char last_sign = -1;
-	int left_bracks_num = 0;
-	state = START;
-	Token token;
-	while (it != str.end())
-	{
-		if (*it == '\0' || *it == ';' || *it == '\n')
+		if (state == START || state == OPERATOR)
 		{
-			if (state == START || state == Space) token.type = TokenType::End;
-			if (state == STRING && *it == ';')state = STRING;
-			else
-			{
-				state = state_trans[state][END];
-				++it;
-				break;
-			}
+			state = state_trans[state][type];
+			if (state == STRING) quot_type = c;
+			if (state == MATRIX) ++lfpnum;
 		}
-		else if (isdigit(*it) || *it == '.')
+		else if (state == ERROR || state == END)
 		{
-			if (state == START || state == Space) token.type = TokenType::Number;
-			state = state_trans[state][NUMBER];
+			return Token::error;
 		}
-		else if (*it == '{' || *it == '}')
+		else if (state == VARIABLE)
 		{
-			if (state == START || state == Space) token.type = TokenType::Matrix;
-			if (*it == '{') ++left_bracks_num;
-			else if (*it == '}')
-			{
-				if (left_bracks_num == 0) state = ERROR;
-				--left_bracks_num;
-				if (left_bracks_num == 0)
-				{
-					token.value.push_back('}');
-					++it;
-					state = END;
-				}
-			}
-			if (state != END && state != ERROR) state = MATRIX;
+			token.type = TokenType::Variable;
+			state = state_trans[state][type];
 		}
-		else if (*it == '"' || *it == '\'')
+		else if (state == NUMBER)
 		{
-			if (state == START || state == Space)
-			{
-				token.type = TokenType::String;
-				str_sign = *it;
-			}
-			if (*it != str_sign && state == STRING)
-				state = state_trans[state][OPERATOR];
-			else
-				state = state_trans[state][STRING];
-			if (state == END && *it == str_sign) ++it;
+			token.type = TokenType::Number;
+			if (!isdigit(c) && c != '.') state = END;
 		}
-		else if (issign(*it))
+		else if (state == STRING)
 		{
-			if ((last_token == TokenType::Operator || last_token == TokenType::BeforeOp || last_token == TokenType::Keyword || last_token == TokenType::Error)
-				&& mayBeforeOpt(token.value + *it))
-			{
-				if (state == START || state == Space || token.type == TokenType::Operator) token.type = TokenType::BeforeOp;
-				state = OPERATOR;
-			}
-			else if ((last_token != TokenType::Operator && last_token != TokenType::BeforeOp && last_token != TokenType::Keyword && last_token != TokenType::Error)
-				&& (isoperation(token.value + *it) && !mayBeforeOpt(token.value + *it)))
-			{
-				if (state == START || state == Space) token.type = TokenType::Operator;
-				state = OPERATOR;
-			}
-			else
-			{
-				if (state == START || state == Space) token.type = TokenType::Operator;
-				if (*it == '(' && ((state == VARIABLE && token.type == TokenType::Variable) || (state == KEYWORD && !isKeyword(token.value))))
-				{
-					token.type = TokenType::Function;
-					++it;
-					state = END;
-				}
-				if ((*it == '(' && state == OPERATOR) || last_sign == ')')state = END;
-				else state = state_trans[state][OPERATOR];
-			}
+			token.type = TokenType::String;
+			if (quot_type == c) state = END;
 		}
-		else if (isalpha(*it) || *it == '_')
+		else if (state == MATRIX)
 		{
-			if (mayKeyword(token.value, *it))
+			token.type = TokenType::Matrix;
+			if (c == '{')
 			{
-				if (state == START || state == Space) token.type = TokenType::Keyword;
-				state = state_trans[state][KEYWORD];
+				++lfpnum;
 			}
-			else
+			else if (c == '}')
 			{
-				if (state == START || state == Space || state == KEYWORD) token.type = TokenType::Variable;
-				state = state_trans[state][VARIABLE];
+				if (lfpnum <= 0) return Token::error;
+				--lfpnum;
+
+				if (lfpnum == 0) state = END;
 			}
-		}
-		else if (*it == ' ' || *it == ',')
-		{
-			state = state_trans[state][Space];
+			// else do nothing
 		}
 
-		if (state == ERROR)
-		{
-			token.type = TokenType::Error;
-			return token;
-		}
-
+		if (!isspace(c)) token.value.push_back(c);
 		if (state == END)
 		{
 			break;
 		}
-		if ((state == STRING && *it != str_sign) ||
-			(state != STRING && state != START && state != Space && *it != ' ')) token.value.push_back(*it);
-		last_sign = *it;
-		++it;
+		last_state = state;
 	}
-	if (state == ERROR)token.type = TokenType::Error;
-	if (it == str.end()) lex_end = true;
-	if (left_bracks_num != 0) token.type = TokenType::Error;
-	if (token.type == TokenType::Keyword && !isKeyword(token.value)) token.type = TokenType::Variable;
-	last_token = token.type;
+	token.type = getTokenType(last_state, token);
 	return token;
 }
 
@@ -369,7 +281,7 @@ std::vector<Token> Lexer::GetTokens(const std::string& target)
 	std::vector<Token> tokens;
 	if (target.empty())return tokens;
 	Automaton automaton(target);
-	while (automaton.isAtEnd())
+	while (!automaton.isAtEnd())
 	{
 		Token token = automaton.GetNextToken();
 		tokens.emplace_back(token);

@@ -50,7 +50,7 @@ ASTNode* Parser::primary()
 
 bool Parser::match(TokenType type)
 {
-    if (isAtEnd()) return false;
+    if (IsAtEnd()) return false;
     if (tokens[current].type == type)
     {
         current++;
@@ -67,13 +67,13 @@ Token Parser::consume(TokenType type, const std::string& message)
 
 bool Parser::check(TokenType type)
 {
-    if (isAtEnd()) return false;
+    if (IsAtEnd()) return false;
     return tokens[current].type == type;
 }
 
 Token Parser::advance()
 {
-    if (!isAtEnd()) current++;
+    if (!IsAtEnd()) current++;
     return previous();
 }
 
@@ -82,7 +82,7 @@ Token Parser::previous()
     return tokens[current - 1];
 }
 
-bool Parser::isAtEnd()
+bool Parser::IsAtEnd()
 {
     return current == tokens.size();
 }

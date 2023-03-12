@@ -1,6 +1,12 @@
 #include "Token.h"
 
-Token::Token() : type(TokenType::Error)
+Token Token::error = Token(TokenType::Error);
+
+Token::Token() : type(TokenType::Undefined)
+{
+
+}
+Token::Token(TokenType type) : type(type)
 {
 
 }
