@@ -1,5 +1,7 @@
 #pragma once
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <string>
 #include <vector>
 
@@ -11,6 +13,9 @@ class Token;
 class UI
 {
 public:
+	static std::ostream* osp;
+	static std::ostream& os;
+
 	static std::string GetInputLine();
 
 	static void Print(int number);
