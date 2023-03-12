@@ -138,7 +138,7 @@ class Automaton
 	CharType getCharType(char c);
 
 	char advance();
-	char previous();
+	void previous();
 
 	static TokenType getTokenType(State state, const Token& token);
 
@@ -169,9 +169,9 @@ char Automaton::advance()
 	if (current != str.size()) ++current;
 	return str[current - 1];
 }
-char Automaton::previous()
+void Automaton::previous()
 {
-	return str[current - 1];
+	--current;
 }
 bool Automaton::isAtEnd()
 {
@@ -241,6 +241,7 @@ Token Automaton::GetNextToken()
 		{
 			token.type = TokenType::Number;
 			if (!isdigit(c) && c != '.') state = END;
+			state = state_trans[state][type];
 		}
 		else if (state == STRING)
 		{
@@ -264,11 +265,12 @@ Token Automaton::GetNextToken()
 			// else do nothing
 		}
 
-		if (!isspace(c)) token.value.push_back(c);
 		if (state == END)
 		{
+			previous();
 			break;
 		}
+		if (!isspace(c)) token.value.push_back(c);
 		last_state = state;
 	}
 	token.type = getTokenType(last_state, token);
