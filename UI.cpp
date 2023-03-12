@@ -94,7 +94,7 @@ void UI::PrintToken(const Token& token)
 		if (t == TokenType::Matrix) return "matrix";
 		if (t == TokenType::Function)return "function";
 		if (t == TokenType::End)return "end";
-		if (t == TokenType::BeforeOp)return "beforpot";
+		// if (t == TokenType::BeforeOp)return "beforpot";
 		return "unknown";
 	};
 	printf("%s, %s\n", getType(token.type), token.value.c_str());
