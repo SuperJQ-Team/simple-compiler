@@ -90,5 +90,5 @@ public:
 class Lexer
 {
 public:
-	static std::vector<Token> GetTokens(const std::string& input_string);
+	static std::vector<Token> GetTokens(const std::string& target);
 };
