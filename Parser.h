@@ -9,11 +9,7 @@ class Parser
 public:
     Parser(const std::vector<Token>& tokens) : tokens(tokens) {}
 
-    ASTNode* parse()
-    {
-        current = 0;
-        return expression();
-    }
+    ASTNode* parse();
 
 private:
     std::vector<Token> tokens;
@@ -33,3 +29,9 @@ private:
 
     bool IsAtEnd();
 };
+
+//class Parser
+//{
+//public:
+//	void GetAST(const std::vector<Token>& tokens);
+//};

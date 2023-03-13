@@ -11,6 +11,8 @@ Global
 		Debug|x86 = Debug|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
+		TODLL|x64 = TODLL|x64
+		TODLL|x86 = TODLL|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{5D805A15-418D-4546-88C3-533B059AB845}.Debug|x64.ActiveCfg = Debug|x64
@@ -21,6 +23,10 @@ Global
 		{5D805A15-418D-4546-88C3-533B059AB845}.Release|x64.Build.0 = Release|x64
 		{5D805A15-418D-4546-88C3-533B059AB845}.Release|x86.ActiveCfg = Release|Win32
 		{5D805A15-418D-4546-88C3-533B059AB845}.Release|x86.Build.0 = Release|Win32
+		{5D805A15-418D-4546-88C3-533B059AB845}.TODLL|x64.ActiveCfg = TODLL|x64
+		{5D805A15-418D-4546-88C3-533B059AB845}.TODLL|x64.Build.0 = TODLL|x64
+		{5D805A15-418D-4546-88C3-533B059AB845}.TODLL|x86.ActiveCfg = TODLL|Win32
+		{5D805A15-418D-4546-88C3-533B059AB845}.TODLL|x86.Build.0 = TODLL|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

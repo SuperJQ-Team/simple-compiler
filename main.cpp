@@ -1,4 +1,3 @@
-//#define TODLL
 #define  _CRT_SECURE_NO_WARNINGS
 
 #ifndef TODLL
@@ -7,7 +6,9 @@
 #include <fstream>
 #include "Lexer.h"
 #include "Matrix.h"
+#include "Parser.h"
 #include "Executer.h"
+#include "ASTNode.h"
 #include "UI.h"
 
 #include <sstream>
@@ -50,7 +51,10 @@ int main(int argc, char* argv[])
 			if (s[0] == EOF)break;
 			vector<Token> tokens = Lexer::GetTokens(s);
 			UI::PrintTokens(tokens);
-			ext.Execute(tokens);
+			Parser parser(tokens);
+			ASTNode* node = parser.parse();
+			//ext.Execute(tokens);
+			ASTDFS(node, 0);
 			UI::PrintLog("\n");
 		}
 	}

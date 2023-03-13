@@ -30,6 +30,8 @@ public:
     ASTNode* GetRight() const;
     const std::vector<ASTNode*>& GetArguments() const;
 
+    friend void ASTDFS(ASTNode* cur, int depth);
+
 private:
     Type type;
     double value;
@@ -39,3 +41,26 @@ private:
     ASTNode* right = nullptr;
     std::vector<ASTNode*> arguments;
 };
+
+//class ASTNode
+//{
+//public:
+//	enum class NodeType
+//	{
+//		Undefine = -2,
+//		Error = -1,
+//		variable = 0,
+//		Keyword,
+//		binaryOperator,
+//		unaryOperator,
+//		FunctionCall
+//	};
+//
+//	NodeType type;
+//	Token value;
+//	std::vector<ASTNode*> childs;
+//
+//	ASTNode();
+//
+//	void CreatFromExpression(std::vector<Token> tokens);
+//};

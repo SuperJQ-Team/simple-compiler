@@ -8,7 +8,6 @@
 #include <sstream>
 
 std::ostream* UI::osp = &std::cout;
-std::ostream& UI::os = *osp;
 bool UI::fileoutfig = false;
 
 char s[256];
@@ -20,7 +19,7 @@ void UI::SetOS(std::ostream& o)
 
 std::string UI::GetInputLine()
 {
-	os << ">>> ";
+	(*osp) << ">>> ";
 	static std::string temp;
 	if (std::getline(std::cin, temp))
 		return temp;
@@ -39,12 +38,12 @@ std::string UI::GetFileLine(std::istream& os)
 
 void UI::Print(int number)
 {
-	os << number;
+	(*osp) << number;
 }
 void UI::Print(double number)
 {
 
-	if (sprintf(s, "%lf", number))os << s;
+	if (sprintf(s, "%lf", number))(*osp) << s;
 }
 void UI::Print(const Matrix& matrix)
 {
@@ -54,25 +53,25 @@ void UI::Print(const Matrix& matrix)
 		PrintErr("This matrix is invalid");
 		return;
 	}
-	if (sprintf(s, "Matrix %d * %d: \n", matrix.row, matrix.col))os << s;
+	if (sprintf(s, "Matrix %d * %d: \n", matrix.row, matrix.col))(*osp) << s;
 	for (int i = 0; i < matrix.row; ++i)
 	{
 		for (int j = 0; j < matrix.col; ++j)
 		{
-			if (sprintf(s, "%10lf", matrix.buffer[i * matrix.col + j]))os << s;
+			if (sprintf(s, "%10lf", matrix.buffer[i * matrix.col + j]))(*osp) << s;
 		}
-		os << "\n";
+		(*osp) << "\n";
 	}
-	os << "\n";
+	(*osp) << "\n";
 }
 void UI::Print(const std::string& str)
 {
-	if (sprintf(s, "\"%s\"", str.c_str()))os << s; \
+	if (sprintf(s, "\"%s\"", str.c_str()))(*osp) << s; \
 }
 
 void UI::Print(bool boolen)
 {
-	os << (boolen ? "True" : "False");
+	(*osp) << (boolen ? "True" : "False");
 }
 
 void UI::Print(const Variable& var)
@@ -81,19 +80,19 @@ void UI::Print(const Variable& var)
 	switch (var.type)
 	{
 	case __Variable::_error:
-		os << ("Error");
+		(*osp) << ("Error");
 		break;
 	case __Variable::_null:
-		os << ("null");
+		(*osp) << ("null");
 		break;
 	case __Variable::_int:
-		if (sprintf(s, "%d", *(int*)var.value))os << s;
+		if (sprintf(s, "%d", *(int*)var.value))(*osp) << s;
 		break;
 	case __Variable::_float:
-		if (sprintf(s, "%lf", *(double*)var.value))os << s;
+		if (sprintf(s, "%lf", *(double*)var.value))(*osp) << s;
 		break;
 	case __Variable::_string:
-		if (sprintf(s, "\"%s\"", (*(std::string*)var.value).c_str()))os << s;
+		if (sprintf(s, "\"%s\"", (*(std::string*)var.value).c_str()))(*osp) << s;
 		break;
 	case __Variable::_matrix:
 		Print(*(Matrix*)var.value);
@@ -102,10 +101,10 @@ void UI::Print(const Variable& var)
 		Print(*(bool*)var.value);
 		break;
 		//case __Variable::_definelog:
-		//	os << "varible " << *(std::string*)value << " has been creat";
+		//	(*osp) << "varible " << *(std::string*)value << " has been creat";
 		//	break;
 		//case __Variable::_varible:
-		//	os << "varible " << *(std::string*)value << " = "; ex.GetValue(*(std::string*)this->value).output(os, ex);
+		//	(*osp) << "varible " << *(std::string*)value << " = "; ex.GetValue(*(std::string*)this->value).output(os, ex);
 		//	break;
 	default:
 		break;
@@ -127,7 +126,7 @@ void UI::PrintToken(const Token& token)
 		return "unknown";
 	};
 
-	if (sprintf(s, "%s, %s\n", getType(token.type), token.value.c_str()))os << s;
+	if (sprintf(s, "%s, %s\n", getType(token.type), token.value.c_str()))(*osp) << s;
 }
 void UI::PrintTokens(const std::vector<Token>& tokens)
 {
@@ -140,25 +139,25 @@ void UI::PrintTokens(const std::vector<Token>& tokens)
 void UI::PrintDefVar(const std::string& var_name)
 {
 
-	if (sprintf(s, "Variable %s is defined.", var_name.c_str()))os << s;
+	if (sprintf(s, "Variable %s is defined.", var_name.c_str()))(*osp) << s;
 }
 void UI::PrintDefFunc(const std::string& func_name)
 {
 
-	if (sprintf(s, "Function %s is defined.", func_name.c_str()))os << s;
+	if (sprintf(s, "Function %s is defined.", func_name.c_str()))(*osp) << s;
 }
 void UI::PrintDefErr(const std::string& def_name, const std::string& reason)
 {
 
-	if (sprintf(s, "Error: cannot define %s. %s.", def_name.c_str(), reason.c_str()))os << s;
+	if (sprintf(s, "Error: cannot define %s. %s.", def_name.c_str(), reason.c_str()))(*osp) << s;
 }
 void UI::PrintErr(const std::string& reason)
 {
 
-	if (sprintf(s, "Error: %s.", reason.c_str()))os << s;
+	if (sprintf(s, "Error: %s.", reason.c_str()))(*osp) << s;
 }
 
 void UI::PrintLog(const std::string& log)
 {
-	os << log;
+	(*osp) << log;
 }
