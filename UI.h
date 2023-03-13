@@ -12,11 +12,16 @@ class Token;
 
 class UI
 {
-public:
-	static std::ostream* osp;
+private:
 	static std::ostream& os;
+	static std::ostream* osp;
+public:
+	static bool fileoutfig;
+
+	static void SetOS(std::ostream&);
 
 	static std::string GetInputLine();
+	static std::string GetFileLine(std::istream& os);
 
 	static void Print(int number);
 	static void Print(double number);
@@ -34,5 +39,6 @@ public:
 	static void PrintDefErr(const std::string& def_name, const std::string& reason);
 
 	static void PrintErr(const std::string& reason);
+	static void PrintLog(const std::string& log);
 };
 

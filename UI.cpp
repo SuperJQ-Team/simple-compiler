@@ -9,14 +9,29 @@
 
 std::ostream* UI::osp = &std::cout;
 std::ostream& UI::os = *osp;
+bool UI::fileoutfig = false;
 
 char s[256];
+
+void UI::SetOS(std::ostream& o)
+{
+	osp = &o;
+}
 
 std::string UI::GetInputLine()
 {
 	os << ">>> ";
 	static std::string temp;
 	if (std::getline(std::cin, temp))
+		return temp;
+	else
+		return "\xFF";
+}
+
+std::string UI::GetFileLine(std::istream& os)
+{
+	static std::string temp;
+	if (std::getline(os, temp))
 		return temp;
 	else
 		return "\xFF";
@@ -109,7 +124,6 @@ void UI::PrintToken(const Token& token)
 		if (t == TokenType::Matrix) return "matrix";
 		if (t == TokenType::Function)return "function";
 		if (t == TokenType::End)return "end";
-		// if (t == TokenType::BeforeOp)return "beforpot";
 		return "unknown";
 	};
 
@@ -142,4 +156,9 @@ void UI::PrintErr(const std::string& reason)
 {
 
 	if (sprintf(s, "Error: %s.", reason.c_str()))os << s;
+}
+
+void UI::PrintLog(const std::string& log)
+{
+	os << log;
 }
