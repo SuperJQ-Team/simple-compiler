@@ -1,5 +1,21 @@
 #include "Parser.h"
 
+
+/*
+
+define -> (def FUNCNAME)| (let VARNAME ("=" value)*)
+expr -> value | (expr (("+" | "-" | "*" | "/"...) expr)*) | ("-" value)
+value -> NUMBER | MATRIX | VARIABLE | STRING | funccall
+
+funccall -> FUNCNAME "(" (NUMBER ("," value("," value...))) ")"
+
+*/
+
+ASTNode* Parser::parse()
+{
+    current = 0;
+    return expression();
+}
 ASTNode* Parser::expression()
 {
     return call();
@@ -86,3 +102,59 @@ bool Parser::IsAtEnd()
 {
     return current == tokens.size();
 }
+
+//enum class TokenType
+//{
+//	Undefined = -2,
+//	Error = -1,
+//	Number = 0,
+//	Operator,
+//	Keyword,
+//	Variable,
+//	String,
+//	Matrix,
+//	Function,
+//	End,
+//	BeforeOp,
+//	LeftParen,
+//	RightParen,
+//	Comma,
+//};
+
+//class Automton
+//{
+//public:
+//	enum ParserState
+//	{
+//		End = -2,
+//		Error = -1,
+//
+//		Start = 1,
+//		Keyword = 2,
+//		Operator = 3,
+//		Variable = 4,
+//		Function = 5,
+//		BeforOpt = 6,
+//
+//	};
+//
+//	ParserState state_trans[255][255] = {
+//		{Start,		Keyword,	Operator,	Variable,	Function},//
+//		{Variable,	},//	Number = 0,
+//		{Error,		},//	Operator,
+//		{Keyword,	},//	Keyword,
+//		{Variable,	},//	Variable,
+//		{Variable	},//	String,
+//		{Variable	},//	Matrix,
+//		{Function	},//	Function,
+//		{End		},//	End,
+//		{Operator	},//	BeforeOp,
+//		{Operator	},//	LeftParen,
+//		{Operator	},//	RightParen,
+//		{Operator	},//	Comma,
+//	};
+//
+//	ParserState state;
+//};
+
+

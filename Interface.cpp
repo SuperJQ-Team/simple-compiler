@@ -11,16 +11,24 @@
 
 using namespace std;
 
-Executer ext;
-stringstream ss;
 char c[256];
+Executer ext;
 
 const char* __stdcall LineInterpreter(const char* input)
 {
-	ss.clear();
+	stringstream ss;
 	UI::SetOS(ss);
 	vector<Token> tokens = Lexer::GetTokens(input);
 	ext.Execute(tokens);
-	strcpy(c, ss.str().c_str());
+	if (ss.str().size() < 256)
+		strcpy(c, ss.str().c_str());
+	else
+	{
+		int i = 0;
+		for (; i < 251; ++i)c[i] = ss.str()[i];
+		c[i] = '.'; c[i + 1] = '.'; c[i + 2] = '.';
+		c[i + 3] = '\0';
+	}
+	UI::SetOS(cout);
 	return c;
 }
