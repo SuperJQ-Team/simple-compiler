@@ -36,26 +36,21 @@ int main(int argc, char* argv[])
 			char cs[256];
 			sprintf(cs, "runing { %s }\n", argv[argc - 1]);
 			UI::PrintLog(cs);
+			UI::fileoutfig = true;
 			while (1)
 			{
 				s = UI::GetFileLine(fin);
 				if (s[0] == EOF)break;
 				vector<Token> tokens = Lexer::GetTokens(s);
-				//UI::PrintTokens(tokens);
-				ext.Execute(tokens);
-				if (tokens.back().type == TokenType::Error)break;
+				auto ans = ext.Execute(tokens);
+				if (tokens.back().type == TokenType::Error || ans.type == __Variable::_error)break;
 				UI::PrintLog("\n");
 			}
 		}
 	}
 	else
 	{
-		ext.Execute({
-			Token(TokenType::Function, "welcome"),
-			Token(TokenType::LeftParen, "("),
-			Token(TokenType::Number, "1"),
-			Token(TokenType::RightParen, ")")
-		});
+		ext.GetFunction("welcome")->run({});
 		while (1)
 		{
 			s = UI::GetInputLine();

@@ -111,6 +111,7 @@ void UI::Print(const Variable& var)
 	default:
 		break;
 	}
+	(*osp) << "\n";
 }
 void UI::PrintToken(const Token& token)
 {

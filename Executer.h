@@ -26,6 +26,7 @@ class Executer
 public:
 	Executer() {}
 	Executer(Executer* parent) : father(parent) {}
+	~Executer();
 	Variable RunOption(const Variable& v1, const Variable& v2, const std::string& opt);
 	Variable& GetValue(const std::string&);
 	Variable& GetValue(const Variable&);

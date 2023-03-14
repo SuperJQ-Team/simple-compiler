@@ -211,6 +211,12 @@ bool Executer::isOccured(const std::string& name)
 }
 
 
+Executer::~Executer()
+{
+	for (auto& x : func_map)
+		delete x.second;
+}
+
 Variable Executer::RunOption(const Variable& _v1, const Variable& _v2, const std::string& opt)
 {
 	Variable v1 = _v1, v2 = _v2;
@@ -529,8 +535,8 @@ Variable Executer::Execute(const std::vector<Token>& tokens)
 		if (tokens[0].value == "end")
 		{
 			UI::infunc = definingfunc = false;
-			UI::PrintDefFunc(tempstr);
-			UI::PrintLog("\n");
+			if (father == nullptr)
+				UI::PrintDefFunc(tempstr);
 		}
 		else
 			func_map[tempstr]->pushInstruction(tokens);
@@ -578,7 +584,8 @@ Variable Executer::Execute(const std::vector<Token>& tokens)
 			{
 				sign_map[name] = _var;
 				var_map[name] = Variable::nul;
-				UI::PrintDefVar(name);
+				if (father == nullptr)
+					UI::PrintDefVar(name);
 				return Variable::nul;
 			}
 			if (tokens[2].type != TokenType::Operator || tokens[2].value != "=" || tokens.size() < 4)
@@ -594,7 +601,8 @@ Variable Executer::Execute(const std::vector<Token>& tokens)
 			}
 			sign_map[name] = _var;
 			var_map[name] = var;
-			UI::PrintDefVar(name);
+			if (father == nullptr)
+				UI::PrintDefVar(name);
 			return Variable::nul;
 		}
 		else if (tokens[0].value == "def")
@@ -670,10 +678,9 @@ Variable Executer::Execute(const std::vector<Token>& tokens)
 	Variable out;
 	if (var.type == __Variable::_varible)out = GetValue(var);
 	else out = var;
-	if (out.type != __Variable::_null)
+	if (out.type != __Variable::_null && father == nullptr && !UI::fileoutfig)
 	{
 		UI::Print(out);
-		UI::PrintLog("\n");
 	}
 	return Variable::nul;
 }
