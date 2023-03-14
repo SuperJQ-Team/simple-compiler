@@ -61,12 +61,11 @@ int main(int argc, char* argv[])
 			s = UI::GetInputLine();
 			if (s[0] == EOF)break;
 			vector<Token> tokens = Lexer::GetTokens(s);
-			UI::PrintTokens(tokens);
+			//UI::PrintTokens(tokens);
 			//Parser parser(tokens);
 			//ASTNode* node = parser.parse();
 			//DFSAST(node, 0);
 			ext.Execute(tokens);
-			UI::PrintLog("\n");
 		}
 	}
 	return 0;

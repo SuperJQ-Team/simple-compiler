@@ -40,12 +40,12 @@ std::string UI::GetFileLine(std::istream& os)
 
 void UI::Print(int number)
 {
-	(*osp) << number;
+	(*osp) << number << "\n";
 }
 void UI::Print(double number)
 {
 
-	if (sprintf(s, "%lf", number))(*osp) << s;
+	if (sprintf(s, "%lf\n", number))(*osp) << s;
 }
 void UI::Print(const Matrix& matrix)
 {
@@ -58,22 +58,22 @@ void UI::Print(const Matrix& matrix)
 	if (sprintf(s, "Matrix %d * %d: \n", matrix.row, matrix.col))(*osp) << s;
 	for (int i = 0; i < matrix.row; ++i)
 	{
+		if (i != 0)(*osp) << "\n";
 		for (int j = 0; j < matrix.col; ++j)
 		{
 			if (sprintf(s, "%10lf", matrix.buffer[i * matrix.col + j]))(*osp) << s;
 		}
-		(*osp) << "\n";
 	}
 	(*osp) << "\n";
 }
 void UI::Print(const std::string& str)
 {
-	if (sprintf(s, "\"%s\"", str.c_str()))(*osp) << s; \
+	if (sprintf(s, "\"%s\"\n", str.c_str()))(*osp) << s;
 }
 
 void UI::Print(bool boolen)
 {
-	(*osp) << (boolen ? "True" : "False");
+	(*osp) << (boolen ? "True" : "False") << "\n";
 }
 
 void UI::Print(const Variable& var)
@@ -141,22 +141,22 @@ void UI::PrintTokens(const std::vector<Token>& tokens)
 void UI::PrintDefVar(const std::string& var_name)
 {
 
-	if (sprintf(s, "Variable %s is defined.", var_name.c_str()))(*osp) << s;
+	if (sprintf(s, "Variable %s is defined.\n", var_name.c_str()))(*osp) << s;
 }
 void UI::PrintDefFunc(const std::string& func_name)
 {
 
-	if (sprintf(s, "Function %s is defined.", func_name.c_str()))(*osp) << s;
+	if (sprintf(s, "Function %s is defined.\n", func_name.c_str()))(*osp) << s;
 }
 void UI::PrintDefErr(const std::string& def_name, const std::string& reason)
 {
 
-	if (sprintf(s, "Error: cannot define %s. %s.", def_name.c_str(), reason.c_str()))(*osp) << s;
+	if (sprintf(s, "Error: cannot define %s. %s.\n", def_name.c_str(), reason.c_str()))(*osp) << s;
 }
 void UI::PrintErr(const std::string& reason)
 {
 
-	if (sprintf(s, "Error: %s.", reason.c_str()))(*osp) << s;
+	if (sprintf(s, "Error: %s.\n", reason.c_str()))(*osp) << s;
 }
 
 void UI::PrintLog(const std::string& log)

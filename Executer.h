@@ -28,6 +28,8 @@ public:
 	Executer(Executer* parent) : father(parent) {}
 	Variable RunOption(const Variable& v1, const Variable& v2, const std::string& opt);
 	Variable& GetValue(const std::string&);
+	Variable& GetValue(const Variable&);
+	Function* GetFunction(const std::string&);
 	Variable Execute(const std::vector<Token>& tokens);
 	void RegisterVarialbe(const std::string& name, const Variable& value);
 	void RegisterFunction(const std::string& name, Function* func);

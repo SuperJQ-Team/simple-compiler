@@ -25,11 +25,11 @@ Variable Function::run(const std::stack<Variable>& _args, Executer* parent)
 	}
 	for (auto& tokens : instructions)
 	{
-		printf("function running\n");
+		//printf("function running\n");
 		auto v = ext.Execute(tokens);
 		if (v.type != __Variable::_error && v.type != __Variable::_null)return v;
 	}
-	printf("function stopped\n");
+	//printf("function stopped\n");
 	return Variable::nul;
 }
 
