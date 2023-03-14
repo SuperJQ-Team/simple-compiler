@@ -15,7 +15,9 @@ class UI
 private:
 	static std::ostream& os;
 	static std::ostream* osp;
+	
 public:
+	static bool infunc;
 	static bool fileoutfig;
 
 	static void SetOS(std::ostream&);

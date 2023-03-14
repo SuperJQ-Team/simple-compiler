@@ -7,6 +7,7 @@
 #include "Matrix.h"
 #include "Executer.h"
 #include "UI.h"
+#include "Function.h"
 #include <string.h>
 
 using namespace std;

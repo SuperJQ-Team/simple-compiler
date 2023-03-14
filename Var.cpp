@@ -1,6 +1,7 @@
 #include "Var.h"
 #include "Matrix.h"
 #include "Executer.h"
+#include "Function.h"
 
 using namespace __Variable;
 

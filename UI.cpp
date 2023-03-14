@@ -9,6 +9,7 @@
 
 std::ostream* UI::osp = &std::cout;
 bool UI::fileoutfig = false;
+bool UI::infunc = false;
 
 char s[256];
 
@@ -19,7 +20,8 @@ void UI::SetOS(std::ostream& o)
 
 std::string UI::GetInputLine()
 {
-	(*osp) << ">>> ";
+	if (!infunc)(*osp) << ">>> ";
+	else (*osp) << "-   ";
 	static std::string temp;
 	if (std::getline(std::cin, temp))
 		return temp;
