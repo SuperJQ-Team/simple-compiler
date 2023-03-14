@@ -33,18 +33,25 @@ int main(int argc, char* argv[])
 		if (!fin)UI::PrintErr("cannot find file!\n");
 		else
 		{
-			char cs[256];
-			sprintf(cs, "runing { %s }\n", argv[argc - 1]);
-			UI::PrintLog(cs);
+			{
+				char cs[256];
+				sprintf(cs, "runing { %s }\n", argv[argc - 1]);
+				UI::PrintLog(cs);
+			}
 			UI::fileoutfig = true;
 			while (1)
 			{
 				s = UI::GetFileLine(fin);
 				if (s[0] == EOF)break;
 				vector<Token> tokens = Lexer::GetTokens(s);
+				//UI::PrintTokens(tokens);
 				auto ans = ext.Execute(tokens);
-				if (tokens.back().type == TokenType::Error || ans.type == __Variable::_error)break;
-				UI::PrintLog("\n");
+				if ((!tokens.empty() && tokens.back().type == TokenType::Error) || ans.type == __Variable::_error)
+				{
+					UI::PrintLog("\n");
+					UI::PrintErr("unknowing error!");
+					break;
+				}
 			}
 		}
 	}
@@ -56,10 +63,6 @@ int main(int argc, char* argv[])
 			s = UI::GetInputLine();
 			if (s[0] == EOF)break;
 			vector<Token> tokens = Lexer::GetTokens(s);
-			//UI::PrintTokens(tokens);
-			//Parser parser(tokens);
-			//ASTNode* node = parser.parse();
-			//DFSAST(node, 0);
 			ext.Execute(tokens);
 		}
 	}

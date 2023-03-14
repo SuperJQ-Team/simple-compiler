@@ -284,10 +284,10 @@ Token Automaton::GetNextToken()
 
 		if (state == END)
 		{
-			if (last_state != MATRIX) previous();
+			if (last_state != MATRIX && last_state != STRING) previous();
 			break;
 		}
-		if (!isspace(c)) token.value.push_back(c);
+		if ((state == STRING && c != quot_type) || (state != STRING && !isspace(c))) token.value.push_back(c);
 		last_state = state;
 	}
 	token.type = getTokenType(last_state, token);
@@ -300,6 +300,7 @@ std::vector<Token> Lexer::GetTokens(const std::string& target)
 	std::vector<Token> tokens;
 	if (target.empty())return tokens;
 	Automaton automaton(target);
+
 	while (!automaton.isAtEnd())
 	{
 		Token token = automaton.GetNextToken();
@@ -307,6 +308,7 @@ std::vector<Token> Lexer::GetTokens(const std::string& target)
 		if (token.type == TokenType::Error) break;
 		if (token.type == TokenType::Function) tokens.emplace_back(Token(TokenType::Operator, "("));
 	}
+
 	for (int i = 0; i < tokens.size(); ++i)
 	{
 		if (i > 0)

@@ -37,6 +37,7 @@ void Function::RegisterGlobalFunc(Executer& executer)
 {
 	executer.RegisterFunction("print", new PrintFunc());
 	executer.RegisterFunction("welcome", new WelcomeFunc());
+	executer.RegisterFunction("help", new HelpFunc());
 }
 
 Variable WelcomeFunc::run(const std::stack<Variable>& args, Executer* parent)
@@ -57,5 +58,25 @@ Variable PrintFunc::run(const std::stack<Variable>& _args, Executer* parent)
 		UI::Print(args.top());
 		args.pop();
 	}
+	return Variable::nul;
+}
+
+static const std::string help_info = " \
+Help:\n \
+\n \
+Global Functions: \n \
+help(): Show this info\n \
+print([args]): print someting...\n \
+welcome(): print welcome-info\n \
+\n \
+Keywords: \n \
+let VAR_NAME (= VALUE)*: define variable as VAR_NAME (and initialized as VALUE)\n \
+def FUNC_NAME '(' ARG1 (, ARG2(, ARG3...)) ')': define function as FUNC_NAME\n \
+\n \
+";
+
+Variable HelpFunc::run(const std::stack<Variable>& args, Executer* parent)
+{
+	UI::PrintLog(help_info);
 	return Variable::nul;
 }

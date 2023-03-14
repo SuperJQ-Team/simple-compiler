@@ -115,7 +115,7 @@ Variable Executer::Calculate(const std::vector<Token>& tokens, int index)
 
 		if (tokens[i].type == TokenType::Function)
 		{
-			if (sign_map[tokens[i].value] != _func)
+			if (GetFunction(tokens[i].value) == nullptr)
 			{
 				UI::PrintErr(tokens[i].value + " is undefine function!");
 				return Variable::err;
@@ -127,34 +127,43 @@ Variable Executer::Calculate(const std::vector<Token>& tokens, int index)
 		else if (tokens[i].type == TokenType::RightParen)
 		{
 			//printf("deal with right paren \n");
+			if (i < 2)UI::PrintErr("Bad right parenthesis.");
 			std::stack<Variable> pam_stack;
-			while (!opts.empty() && opts.top().type != TokenType::LeftParen && opts.top().type != TokenType::Function)
+			if (tokens[i-2].type == TokenType::Function)
 			{
-				if (opts.top().type == TokenType::Comma)
+				vars.push(GetFunction(opts.top().value)->run({}, this));
+				opts.pop();
+			}
+			else
+			{
+				while (!opts.empty() && opts.top().type != TokenType::LeftParen && opts.top().type != TokenType::Function)
+				{
+					if (opts.top().type == TokenType::Comma)
+					{
+						if (vars.top().type == __Variable::_varible)pam_stack.push(GetValue(vars.top()));
+						else pam_stack.push(vars.top());
+						vars.pop();
+						opts.pop();
+					}
+					else
+					{
+						if (vars.size() < 2)return Variable::err;//ERROR;
+						Variable v1, v2;
+						v2 = vars.top(); vars.pop();
+						v1 = vars.top(); vars.pop();
+						vars.push(RunOption(v1, v2, opts.top().value));
+						opts.pop();
+					}
+				}
+				if (opts.top().type == TokenType::Function)
 				{
 					if (vars.top().type == __Variable::_varible)pam_stack.push(GetValue(vars.top()));
 					else pam_stack.push(vars.top());
 					vars.pop();
-					opts.pop();
+					vars.push(GetFunction(opts.top().value)->run(pam_stack, this));
 				}
-				else
-				{
-					if (vars.size() < 2)return Variable::err;//ERROR;
-					Variable v1, v2;
-					v2 = vars.top(); vars.pop();
-					v1 = vars.top(); vars.pop();
-					vars.push(RunOption(v1, v2, opts.top().value));
-					opts.pop();
-				}
+				opts.pop();
 			}
-			if (opts.top().type == TokenType::Function)
-			{
-				if (vars.top().type == __Variable::_varible)pam_stack.push(GetValue(vars.top()));
-				else pam_stack.push(vars.top());
-				vars.pop();
-				vars.push(GetFunction(opts.top().value)->run(pam_stack, this));
-			}
-			opts.pop();
 		}
 		else if (tokens[i].type == TokenType::Operator || tokens[i].type == TokenType::LeftParen)
 		{
@@ -497,6 +506,10 @@ Variable Executer::RunOption(const Variable& _v1, const Variable& _v2, const std
 			return v;
 		}
 	}
+	else if (v1.type == __Variable::_null && v2.type == __Variable::_null)
+	{
+		v = Variable::nul;
+	}
 	else
 	{
 		v.type = __Variable::_error;
@@ -535,7 +548,7 @@ Variable Executer::Execute(const std::vector<Token>& tokens)
 		if (tokens[0].value == "end")
 		{
 			UI::infunc = definingfunc = false;
-			if (father == nullptr)
+			if (father == nullptr && !UI::fileoutfig)
 				UI::PrintDefFunc(tempstr);
 		}
 		else
@@ -584,7 +597,7 @@ Variable Executer::Execute(const std::vector<Token>& tokens)
 			{
 				sign_map[name] = _var;
 				var_map[name] = Variable::nul;
-				if (father == nullptr)
+				if (father == nullptr && !UI::fileoutfig)
 					UI::PrintDefVar(name);
 				return Variable::nul;
 			}
@@ -601,7 +614,7 @@ Variable Executer::Execute(const std::vector<Token>& tokens)
 			}
 			sign_map[name] = _var;
 			var_map[name] = var;
-			if (father == nullptr)
+			if (father == nullptr && !UI::fileoutfig)
 				UI::PrintDefVar(name);
 			return Variable::nul;
 		}
