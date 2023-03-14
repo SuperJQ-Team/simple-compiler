@@ -59,7 +59,7 @@ const std::map<std::string, OptionType> operators =
 
 	{"**",	OptionType::power}
 };
-const std::string keywords[] = { "let", "def", "end", "if", "for", "do", "while" };
+const std::string keywords[] = { "let", "def", "end", "if", "for", "do", "while","return" };
 
 
 bool issign(char c)
@@ -306,6 +306,14 @@ std::vector<Token> Lexer::GetTokens(const std::string& target)
 		tokens.emplace_back(token);
 		if (token.type == TokenType::Error) break;
 		if (token.type == TokenType::Function) tokens.emplace_back(Token(TokenType::Operator, "("));
+	}
+	for (int i = 0; i < tokens.size(); ++i)
+	{
+		if (i > 0)
+		{
+			if (tokens[i - 1].type == TokenType::Variable && tokens[i].type == TokenType::LeftParen)
+				tokens[i - 1].type = TokenType::Function;
+		}
 	}
 	return tokens;
 }

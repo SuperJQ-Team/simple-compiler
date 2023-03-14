@@ -126,7 +126,7 @@ void DFSAST(ASTNode* node, int deepth)
 		DFSAST(n.getCond(), deepth + 1);
 		printf("%*supdate:\n", bs, "");
 		DFSAST(n.getUpdate(), deepth + 1);
-		printf("%*body:\n", bs, "");
+		printf("%*sbody:\n", bs, "");
 		DFSAST(n.getBody(), deepth + 1);
 		printf("%*s}\n", bs, "");
 	}

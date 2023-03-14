@@ -1,4 +1,5 @@
 #include "Token.h"
+#include "Var.h"
 
 Token Token::error = Token(TokenType::Error);
 

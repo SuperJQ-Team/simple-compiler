@@ -109,64 +109,93 @@ inline bool isvol(const std::string s)
 Variable Executer::Calculate(const std::vector<Token>& tokens, int index)
 {
 	std::stack<Token> opts;
-	std::vector<Token> backtokens;
-	for (; index < tokens.size(); ++index)
+	std::stack<Variable> vars;
+	for (int i = index; i < tokens.size(); ++i)
 	{
-		//std::cerr << "taking token " << tokens[index].value << " !\n";
-		if (tokens[index].type == TokenType::End || tokens[index].type == TokenType::Semicolon)
-		{
-			break;
-		}
-		if (tokens[index].type == TokenType::Operator || tokens[index].type == TokenType::LeftParen || tokens[index].type == TokenType::RightParen)
-		{
 
-			if (tokens[index].value == ")")
+		if (tokens[i].type == TokenType::Function)
+		{
+			if (sign_map[tokens[i].value] != _func)
 			{
-				while (!opts.empty() && opts.top().value != "(")
+				UI::PrintErr(tokens[i].value + " is undefine function!");
+				return Variable::err;
+			}
+			printf("deal with function %s\n", tokens[i].value.c_str());
+			opts.push(tokens[i]);
+			++i;
+		}
+		else if (tokens[i].type == TokenType::RightParen)
+		{
+			printf("deal with right paren \n");
+			std::stack<Variable> pam_stack;
+			while (!opts.empty() && opts.top().type != TokenType::LeftParen && opts.top().type != TokenType::Function)
+			{
+				if (opts.top().type == TokenType::Comma)
 				{
-					backtokens.emplace_back(opts.top());
+					pam_stack.push(vars.top());
+					vars.pop();
 					opts.pop();
 				}
-				if (opts.empty())return Variable::err;//ERROR;
+				else
+				{
+					if (vars.size() < 2)return Variable::err;//ERROR;
+					Variable v1, v2;
+					v2 = vars.top(); vars.pop();
+					v1 = vars.top(); vars.pop();
+					vars.push(RunOption(v1, v2, tokens[i].value));
+					opts.pop();
+				}
+			}
+			if (opts.top().type == TokenType::Function)
+			{
+				pam_stack.push(vars.top());
+				vars.pop();
+				vars.push(func_map[opts.top().value]->run(pam_stack, this));
+			}
+			opts.pop();
+		}
+		else if (tokens[i].type == TokenType::Operator || tokens[i].type == TokenType::LeftParen)
+		{
+			printf("deal with operator %s\n", tokens[i].value.c_str());
+			while (!opts.empty() && opts.top().type != TokenType::LeftParen && GetPriority(opts.top().value) >= GetPriority(tokens[i].value))
+			{
+				if (vars.size() < 2)return Variable::err;//ERROR;
+				Variable v1, v2;
+				v2 = vars.top(); vars.pop();
+				v1 = vars.top(); vars.pop();
+				vars.push(RunOption(v1, v2, tokens[i].value));
 				opts.pop();
 			}
-			else
+			opts.push(tokens[i]);
+		}
+		else if (tokens[i].type == TokenType::Comma)
+		{
+			printf("deal with Comma \n");
+			while (!opts.empty() && opts.top().type != TokenType::Comma && opts.top().type != TokenType::Function)
 			{
-				//std::cerr << "Push operator " << tokens[index].value << " \n";
-				while (!opts.empty() && opts.top().value != "(" && GetPriority(opts.top().value) >= GetPriority(tokens[index].value))
-				{
-					//std::cerr << "Pop operator " << opts.top().value << " \n";
-					backtokens.emplace_back(opts.top());
-					opts.pop();
-				}
-				opts.push(tokens[index]);
+				if (vars.size() < 2)return Variable::err;//ERROR;
+				Variable v1, v2;
+				v2 = vars.top(); vars.pop();
+				v1 = vars.top(); vars.pop();
+				vars.push(RunOption(v1, v2, tokens[i].value));
+				opts.pop();
 			}
+			opts.push(tokens[i]);
 		}
 		else
 		{
-			backtokens.emplace_back(tokens[index]);
+			printf("deal with var %s\n", tokens[i].value.c_str());
+			vars.push(Variable(tokens[i]));
 		}
 	}
-	while (!opts.empty()) { backtokens.emplace_back(opts.top()); opts.pop(); };
-
-
-	std::stack<Variable> vars;
-	for (auto it = backtokens.begin(); it != backtokens.end(); ++it)
+	while (!opts.empty())
 	{
-		if (it->type == TokenType::Operator || it->type == TokenType::LeftParen || it->type == TokenType::RightParen)
-		{
-			if (vars.size() < 2)return Variable::err;//ERROR;
-			Variable v1, v2;
-			v2 = vars.top(); vars.pop();
-			v1 = vars.top(); vars.pop();
-			//std::cerr << "Is executing operator " << it->value << " \n";
-			vars.push(RunOption(v1, v2, it->value));
-		}
-		else
-		{
-			Variable v(*it);
-			vars.push(v);
-		}
+		if (vars.size() < 2)return Variable::err;//ERROR;
+		Variable v1, v2;
+		v2 = vars.top(); vars.pop();
+		v1 = vars.top(); vars.pop();
+		vars.push(RunOption(v1, v2, opts.top().value));
+		opts.pop();
 	}
 	if (vars.size() != 1) return Variable::err;
 	if (vars.top().type == __Variable::_varible)return GetValue(*(std::string*)vars.top().value);
@@ -483,7 +512,7 @@ Variable Executer::Execute(const std::vector<Token>& tokens)
 		if (tokens[0].value == "end")
 			UI::infunc = definingfunc = false;
 		else
-			func_map[tempstr].pushInstruction(tokens);
+			func_map[tempstr]->pushInstruction(tokens);
 		return Variable::nul;
 	}
 	for (Token token : tokens)
@@ -549,36 +578,59 @@ Variable Executer::Execute(const std::vector<Token>& tokens)
 		}
 		else if (tokens[0].value == "def")
 		{
+			if (tokens.size() < 2)
+			{
+				UI::PrintErr("Cannot find the function name");
+				return Variable::err;
+			}
 			std::string name = tokens[1].value;
+			if (isOccured(name))
+			{
+				UI::PrintDefErr(tokens[1].value, "This sign is already existed");
+				return Variable::nul;
+			}
 			std::vector<std::string> argvs;
 			if (tokens[2].value != "(")
 			{
-				UI::PrintDefErr(name, "define error");
+				UI::PrintDefErr(name, "Cannot find the list of arguments");
 				return Variable::nul;
 			}
 			int i = 3;
-			for (; tokens[i + 1].value != ")" && tokens.size() > i + 1; i += 2)
+			for (; i < tokens.size(); ++i)
 			{
+				if (tokens[i].type == TokenType::RightParen) break;
+				if (tokens[i].type == TokenType::Comma) continue;
 				argvs.emplace_back(tokens[i].value);
 			}
+			if (i != tokens.size() - 1 || tokens[i].type != TokenType::RightParen)
+			{
+				UI::PrintDefErr(name, "Cannot find \')\'");
+				return Variable::err;
+			}
+			++i;
 			std::vector<Token> ts;
 			for (; i < tokens.size(); ++i)
 			{
 				ts.emplace_back(tokens[i]);
 			}
-			Function func(name, argvs);
+			Function *func = new Function(name, argvs);
 			if (!ts.empty())
 			{
-				func.pushInstruction(ts);
+				func->pushInstruction(ts);
 			}
 			definingfunc = true;
 			func_map[name] = func;
 			sign_map[name] = _func;
 			tempstr = name;
 			UI::infunc = true;
+			return Variable::nul;
 		}
 		else if (tokens[0].value == "return")
 		{
+			UI::PrintLog("----------FUcK---------\n");
+			UI::PrintTokens(tokens);
+			UI::Print(Calculate(tokens, 1));
+			UI::PrintLog("\n-----------------------\n");
 			return Calculate(tokens, 1);
 		}
 		else
@@ -604,6 +656,21 @@ void Executer::RegisterVarialbe(const std::string& name, const Variable& var)
 {
 	if (sign_map.find(name) != sign_map.end())
 		return;
-	else if (sign_map.find(name) == sign_map.end())
+	else
+	{
+		sign_map[name] = _var;
 		var_map[name] = var;
+	}
+}
+
+void Executer::RegisterFunction(const std::string& name, Function* func)
+{
+	if (sign_map.find(name) != sign_map.end())
+		return;
+	else
+	{
+		sign_map[name] = _func;
+		func_map[name] = func;
+	}
+		
 }

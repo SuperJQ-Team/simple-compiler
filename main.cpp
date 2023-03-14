@@ -25,6 +25,7 @@ int main(int argc, char* argv[])
 	ifstream fin;
 	string s;
 	Executer ext;
+	Function::RegisterGlobalFunc(ext);
 	if (argc >= 2)
 	{
 		string file(argv[argc - 1]);
@@ -49,17 +50,21 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
-		WelcomeFunc welfunc;
-		welfunc.run({});
+		ext.Execute({
+			Token(TokenType::Function, "welcome"),
+			Token(TokenType::LeftParen, "("),
+			Token(TokenType::Number, "1"),
+			Token(TokenType::RightParen, ")")
+		});
 		while (1)
 		{
 			s = UI::GetInputLine();
 			if (s[0] == EOF)break;
 			vector<Token> tokens = Lexer::GetTokens(s);
 			UI::PrintTokens(tokens);
-			Parser parser(tokens);
-			ASTNode* node = parser.parse();
-			DFSAST(node, 0);
+			//Parser parser(tokens);
+			//ASTNode* node = parser.parse();
+			//DFSAST(node, 0);
 			ext.Execute(tokens);
 			UI::PrintLog("\n");
 		}
