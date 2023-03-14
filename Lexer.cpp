@@ -6,7 +6,7 @@
 
 using namespace __Lexer;
 
-const std::set<char> sign = {'+','-','*','/','%','<','>','=','(',')','[',']','{','}',
+const std::set<char> sign = { '+','-','*','/','%','<','>','=','(',')','[',']','{','}',
 						'!','@','#','$','^','&','~','?',':',';','\'','\\','|' };
 
 const std::map<std::string, OptionType> operators =
@@ -59,7 +59,7 @@ const std::map<std::string, OptionType> operators =
 
 	{"**",	OptionType::power}
 };
-const std::string keywords[] = { "let", "def", "end", "if", "for", "do", "while" };
+const std::string keywords[] = { "let", "def", "end", "if", "for", "do", "while","return" };
 
 
 bool issign(char c)
@@ -103,7 +103,8 @@ class Automaton
 		OPERATOR,
 		VARIABLE,
 		STRING,
-		MATRIX
+		MATRIX,
+		SPECIAL,
 	};
 	enum CharType
 	{
@@ -117,18 +118,20 @@ class Automaton
 		RightFlowerParen,	// }
 		Quotation,			// "
 		Comma,				// ,
+		Semicolon,			// ;
 		Operator
 	};
 	const State state_trans[255][255] = {
-		//			Space,	Digit,		Alpha,		(,		),		{,		},		",		,,		Operator	
-		{START,		START,	NUMBER,		VARIABLE,	END,	END,	MATRIX,	ERROR,	STRING,	END,	OPERATOR},
-		{ERROR,		ERROR,	ERROR,		ERROR,		ERROR,	ERROR,	ERROR,	ERROR,	ERROR,	END,	ERROR},
-		{END,		END,	END,		END,		END,	END,	END,	END,	END,	END,	END},
-		{NUMBER,	END,	NUMBER,		END,		END,	END,	END,	END,	END,	END,	END},
-		{OPERATOR,	END,	END,		END,		END,	END,	END,	END,	END,	END,	OPERATOR},
-		{VARIABLE,	END,	VARIABLE,	VARIABLE,	END,	END,	END,	END,	END,	END,	END},
-		{STRING,	STRING,	STRING,		STRING,		STRING,	STRING,	STRING,	STRING,	END,	STRING,	STRING},
-		{MATRIX,	MATRIX,	MATRIX,		MATRIX,		MATRIX,	MATRIX,	MATRIX,	MATRIX,	ERROR,	MATRIX,	MATRIX}
+		//			Space,	Digit,		Alpha,		(,		),		{,		},		",		,,		;		Operator	
+		{START,		START,	NUMBER,		VARIABLE,	SPECIAL,SPECIAL,MATRIX,	ERROR,	STRING,	SPECIAL,SPECIAL,OPERATOR},
+		{ERROR,		ERROR,	ERROR,		ERROR,		ERROR,	ERROR,	ERROR,	ERROR,	ERROR,	END,	END,	ERROR},
+		{END,		END,	END,		END,		END,	END,	END,	END,	END,	END,	END,	END},
+		{NUMBER,	END,	NUMBER,		END,		END,	END,	END,	END,	END,	END,	END,	END},
+		{OPERATOR,	END,	END,		END,		END,	END,	END,	END,	END,	END,	END,	OPERATOR},
+		{VARIABLE,	END,	VARIABLE,	VARIABLE,	END,	END,	END,	END,	END,	END,	END,	END},
+		{STRING,	STRING,	STRING,		STRING,		STRING,	STRING,	STRING,	STRING,	END,	STRING,	STRING,	STRING},
+		{MATRIX,	MATRIX,	MATRIX,		MATRIX,		MATRIX,	MATRIX,	MATRIX,	MATRIX,	ERROR,	MATRIX,	ERROR,	MATRIX},
+		{SPECIAL,	SPECIAL,END,		END,		END,	END,	END,	END,	END,	END,	END,	END},
 	};
 
 	std::string str;
@@ -152,7 +155,7 @@ public:
 Automaton::CharType Automaton::getCharType(char c)
 {
 	if (c == ' ') return Space;
-	if (isdigit(c)) return Digit;
+	if (isdigit(c) || c == '.') return Digit;
 	if (isalpha(c)) return Alpha;
 	if (c == '(') return LeftParen;
 	if (c == ')') return RightParen;
@@ -160,7 +163,8 @@ Automaton::CharType Automaton::getCharType(char c)
 	if (c == '}') return RightFlowerParen;
 	if (c == '"') return Quotation;
 	if (c == ',') return Comma;
-	if (sign.find(c) != sign.end()) return CharType::Operator;
+	if (c == ';') return Semicolon;
+	if (sign.find(c) != sign.end()) return Operator;
 	return CharType::Error;
 }
 
@@ -186,18 +190,19 @@ TokenType Automaton::getTokenType(State state, const Token& token)
 	if (state == OPERATOR) return TokenType::Operator;
 	if (state == MATRIX) return TokenType::Matrix;
 	if (state == STRING) return TokenType::String;
-	
+
 	if (state == VARIABLE)
 	{
 		if (isKeyword(token.value)) return TokenType::Keyword;
 		return TokenType::Variable;
 	}
 
-	if (state == START)
+	if (state == SPECIAL)
 	{
 		if (token.value == "(") return TokenType::LeftParen;
 		if (token.value == ")") return TokenType::RightParen;
 		if (token.value == ",") return TokenType::Comma;
+		if (token.value == ";")return TokenType::Semicolon;
 		return TokenType::Error;
 	}
 
@@ -212,8 +217,7 @@ Automaton::Automaton(const std::string& str)
 
 Token Automaton::GetNextToken()
 {
-	// number of left flower paren(s)
-	int lfpnum = 0;
+	int lfpnum = 0;// number of left flower paren(s)
 	char quot_type = '\0';
 	State state = START, last_state = START;
 	Token token;
@@ -222,11 +226,16 @@ Token Automaton::GetNextToken()
 		char c = advance();
 		CharType type = getCharType(c);
 
-		if (state == START || state == OPERATOR)
+		if (state == START || state == SPECIAL)
 		{
 			state = state_trans[state][type];
 			if (state == STRING) quot_type = c;
 			if (state == MATRIX) ++lfpnum;
+		}
+		else if (state == OPERATOR)
+		{
+			state = state_trans[state][type];
+			if (state == OPERATOR && !isoperator(token.value + c))state = END;
 		}
 		else if (state == ERROR || state == END)
 		{
@@ -268,6 +277,10 @@ Token Automaton::GetNextToken()
 			}
 			// else do nothing
 		}
+		else
+		{
+			state = state_trans[state][type];
+		}
 
 		if (state == END)
 		{
@@ -293,6 +306,14 @@ std::vector<Token> Lexer::GetTokens(const std::string& target)
 		tokens.emplace_back(token);
 		if (token.type == TokenType::Error) break;
 		if (token.type == TokenType::Function) tokens.emplace_back(Token(TokenType::Operator, "("));
+	}
+	for (int i = 0; i < tokens.size(); ++i)
+	{
+		if (i > 0)
+		{
+			if (tokens[i - 1].type == TokenType::Variable && tokens[i].type == TokenType::LeftParen)
+				tokens[i - 1].type = TokenType::Function;
+		}
 	}
 	return tokens;
 }

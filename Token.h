@@ -18,6 +18,11 @@ enum class TokenType
 	LeftParen,
 	RightParen,
 	Comma,
+	If,
+	For,
+	Else,
+	Semicolon,
+
 };
 
 class Token

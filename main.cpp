@@ -1,5 +1,9 @@
 #define  _CRT_SECURE_NO_WARNINGS
 
+//#define DEBUG
+
+#ifndef DEBUG
+
 #ifndef TODLL
 
 #include <iostream>
@@ -10,6 +14,7 @@
 #include "Executer.h"
 #include "ASTNode.h"
 #include "UI.h"
+#include "Function.h"
 
 #include <sstream>
 
@@ -17,10 +22,10 @@ using namespace std;
 
 int main(int argc, char* argv[])
 {
-
 	ifstream fin;
 	string s;
 	Executer ext;
+	Function::RegisterGlobalFunc(ext);
 	if (argc >= 2)
 	{
 		string file(argv[argc - 1]);
@@ -45,17 +50,22 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
+		ext.Execute({
+			Token(TokenType::Function, "welcome"),
+			Token(TokenType::LeftParen, "("),
+			Token(TokenType::Number, "1"),
+			Token(TokenType::RightParen, ")")
+		});
 		while (1)
 		{
 			s = UI::GetInputLine();
 			if (s[0] == EOF)break;
 			vector<Token> tokens = Lexer::GetTokens(s);
-			UI::PrintTokens(tokens);
-			Parser parser(tokens);
-			ASTNode* node = parser.parse();
-			//ext.Execute(tokens);
-			ASTDFS(node, 0);
-			UI::PrintLog("\n");
+			//UI::PrintTokens(tokens);
+			//Parser parser(tokens);
+			//ASTNode* node = parser.parse();
+			//DFSAST(node, 0);
+			ext.Execute(tokens);
 		}
 	}
 	return 0;
@@ -81,6 +91,39 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 		break;
 	}
 	return TRUE;
+}
+
+#endif
+
+#else
+
+#include "Function.h"
+#include "Var.h"
+#include <string>
+#include <vector>
+using namespace std;
+
+int main()
+{
+	WelcomeFunc welfunc;
+	welfunc.run({});
+	string s;
+	PrintFunc print;
+	while (1)
+	{
+		s = UI::GetInputLine();
+		if (s[0] == EOF)break;
+		vector<Token> tokens = Lexer::GetTokens(s);
+		UI::PrintTokens(tokens);
+		vector<Variable> t;
+		for (auto& token : tokens)
+		{
+			if (token.type == TokenType::Number) t.push_back(Variable(token));
+		}
+		print.run(t);
+		//ext.Execute(tokens);
+		UI::PrintLog("\n");
+	}
 }
 
 #endif
