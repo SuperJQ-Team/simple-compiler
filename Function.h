@@ -57,6 +57,13 @@ public:
 	Variable run(const std::stack<Variable>& args, Executer* parent = nullptr);
 };
 
+class PrintLnFunc : public Function
+{
+public:
+	Variable run(const std::stack<Variable>& args, Executer* parent = nullptr);
+};
+
+
 class HelpFunc : public Function
 {
 public:

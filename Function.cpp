@@ -39,6 +39,7 @@ Variable Function::run(const std::stack<Variable>& _args, Executer* parent)
 void Function::RegisterGlobalFunc(Executer& executer)
 {
 	executer.RegisterFunction("print", new PrintFunc());
+	executer.RegisterFunction("println", new PrintLnFunc());
 	executer.RegisterFunction("welcome", new WelcomeFunc());
 	executer.RegisterFunction("help", new HelpFunc());
 	executer.RegisterFunction("det", new DetFunc());
@@ -57,7 +58,7 @@ Variable PrintFunc::run(const std::stack<Variable>& _args, Executer* parent)
 	bool first = true;
 	while (!args.empty())
 	{
-		if (!first) UI::PrintLog(", ");
+		if (!first) UI::PrintLog(" ");
 		first = false;
 		UI::Print(args.top());
 		args.pop();
@@ -134,6 +135,21 @@ Variable ForFunc::run(const std::stack<Variable>& args, Executer* parent)
 			}
 		}
 		ext.Execute(pass);
+	}
+	return Variable::nul;
+}
+
+Variable PrintLnFunc::run(const std::stack<Variable>& _args, Executer* parent)
+{
+	std::stack<Variable> args = _args;
+	if (args.empty())UI::PrintLog("\n");
+	bool first = true;
+	while (!args.empty())
+	{
+		if (!first) UI::PrintLog("\n");
+		first = false;
+		UI::Print(args.top());
+		args.pop();
 	}
 	return Variable::nul;
 }
