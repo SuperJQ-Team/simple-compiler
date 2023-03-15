@@ -579,6 +579,19 @@ Variable Executer::Execute(const std::vector<Token>& tokens)
 						return v;
 					}
 				}
+				else if (funcDefVar.type == FuncDefVar::_for)
+				{
+					Variable v;
+					v = func_map["@for"]->run({}, this);
+					delete func_map["@for"];
+					func_map.erase("@for");
+					var_map.erase("@for");
+					if (ifreturn)
+					{
+						ifreturn = false;
+						return v;
+					}
+				}
 			}
 			else if (tokens[0].value == "end")
 			{
@@ -627,7 +640,7 @@ Variable Executer::Execute(const std::vector<Token>& tokens)
 	{
 		for (int i = 1; i < tokens.size(); ++i)
 		{
-			if (tokens[i].type == TokenType::Keyword)
+			if (tokens[i].type == TokenType::Keyword && tokens[i - 1].type != TokenType::LeftParen)
 			{
 				UI::PrintErr("Format error");
 				return Variable::nul;
@@ -767,6 +780,60 @@ Variable Executer::Execute(const std::vector<Token>& tokens)
 
 			funcDefVar.set(name, FuncDefVar::_if);
 			funcDefVar._ifparm = Calculate(bool_tokens, 0);
+			func_map[name] = func;
+			sign_map[name] = _func;
+			if (father == nullptr)
+				UI::infunc = true;
+			return Variable::nul;
+		}
+		else if (tokens[0].value == "for")
+		{
+			if (tokens[1].type != TokenType::LeftParen)
+				return Variable::err;
+			//¥¶¿Ìif
+			int i = 2;
+			std::string name = "@for";
+			int parmtokensnum = 0;
+			std::vector<std::vector<Token>> parmtokens(3);
+			for (; i < tokens.size(); ++i)
+			{
+				if (tokens[i].type == TokenType::RightParen) break;
+				if (tokens[i].type == TokenType::Semicolon)
+				{
+					parmtokensnum++;
+					if (parmtokensnum >= 3)
+					{
+						UI::PrintErr("More parms for \'for\' Keyword");
+						return Variable::err;
+					}
+				}
+				else
+				{
+					parmtokens[parmtokensnum].emplace_back(tokens[i]);
+				}
+			}
+			if (parmtokensnum != 2)
+			{
+				UI::PrintErr("Less parms for \'for\' Keyword");
+				return Variable::err;
+			}
+
+			if (i != tokens.size() - 1 || tokens[i].type != TokenType::RightParen)
+			{
+
+				UI::PrintErr("The \'for\' Cannot find \')\'");
+				return Variable::err;
+			}
+			++i;
+			std::vector<Token> ts;
+			for (; i < tokens.size(); ++i)
+				ts.emplace_back(tokens[i]);
+
+			Function* func = new ForFunc(parmtokens[0], parmtokens[1], parmtokens[2]);
+			if (!ts.empty())
+				func->pushInstruction(ts);
+
+			funcDefVar.set(name, FuncDefVar::_for);
 			func_map[name] = func;
 			sign_map[name] = _func;
 			if (father == nullptr)

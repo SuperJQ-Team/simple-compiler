@@ -111,3 +111,29 @@ Variable DetFunc::run(const std::stack<Variable>& args, Executer* parent)
 	res.value = new double(result);
 	return res;
 }
+
+ForFunc::ForFunc(const std::vector<Token>& init, const std::vector<Token>& judge, const std::vector<Token>& pass) :init(init), judge(judge), pass(pass)
+{
+	name = "@for";
+	arguments = {};
+}
+
+Variable ForFunc::run(const std::stack<Variable>& args, Executer* parent)
+{
+	Executer ext(parent);
+	ext.Execute(init);
+	while (Variable::iftrue(ext.Calculate(judge, 0)))
+	{
+		for (auto& tokens : instructions)
+		{
+			auto v = ext.Execute(tokens);
+			if (v.type != __Variable::_error && ext.ifreturn)
+			{
+				parent->ifreturn = ext.ifreturn;
+				return v;
+			}
+		}
+		ext.Execute(pass);
+	}
+	return Variable::nul;
+}
