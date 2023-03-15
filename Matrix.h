@@ -8,6 +8,7 @@
 
 class Executer;
 class DetFunc;
+class EFunc;
 
 class Matrix
 {
@@ -33,6 +34,7 @@ public:
 	static friend void UI::Print(const Matrix& matrix);
 	
 	friend Variable DetFunc::run(const std::stack<Variable>& args, Executer* parent);
+	friend Variable EFunc::run(const std::stack<Variable>& args, Executer* parent);
 };
 
 Matrix operator * (const Matrix& ma, const Matrix& mb);
