@@ -27,6 +27,7 @@ Variable::Variable(const Token& token)
 
 Variable::Variable(const Variable& var)
 {
+	if (value != nullptr)delete value;
 	type = var.type;
 	if (type == _null)
 		value = nullptr;
@@ -45,6 +46,7 @@ Variable::Variable(const Variable& var)
 Variable& Variable::operator=(const Variable& var)
 {
 	if (this == &var) return *this;
+	del();
 	type = var.type;
 	if (type == _null)
 		value = nullptr;
@@ -116,6 +118,16 @@ void Variable::set(const Token& token)
 	}
 }
 
+void Variable::del()
+{
+	if (value == nullptr)return;
+	if (type == _string || type == _definelog || type == _varible)
+		delete (std::string*)(value);
+	else if (type == _matrix)
+		delete(Matrix*)(value);
+	else delete value;
+}
+
 Variable Variable::deflog(const std::string& s)
 {
 	auto v = Variable();
@@ -124,4 +136,11 @@ Variable Variable::deflog(const std::string& s)
 	return v;
 }
 
-
+bool Variable::iftrue(const Variable& var)
+{
+	if (var.type == _bool)
+		return *(bool*)var.value;
+	else if (var.type == _int)
+		return (bool)*(int*)var.value;
+	else return false;
+}

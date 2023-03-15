@@ -27,7 +27,7 @@ public:
 
 	void* value = nullptr;
 	__Variable::Type type = __Variable::_null;
-	inline ~Variable() { if (value != nullptr)delete value; }
+	inline ~Variable() { del(); }
 
 	Variable();
 	Variable(__Variable::Type type);
@@ -37,10 +37,14 @@ public:
 	Variable& operator= (const Variable& var);
 
 	void set(const Token& token);
+	void del();
 
 	static Variable err;
 	static Variable nul;
 	static Variable deflog(const std::string&);
 
+	static bool iftrue(const Variable& var);
+
 	static friend void UI::Print(const Variable& var);
+
 };

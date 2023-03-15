@@ -157,14 +157,14 @@ FuncDeclNode* Parser::parseFuncDecl()
 // ½âÎöÒ»¸öÓï¾ä
 StmtNode* Parser::parseStmt()
 {
-	if (match(TokenType::If))
-	{
-		return parseIfStmt();
-	}
-	if (match(TokenType::For))
-	{
-		return parseForStmt();
-	}
+	//if (match(TokenType::If))
+	//{
+	//	return parseIfStmt();
+	//}
+	//if (match(TokenType::For))
+	//{
+	//	return parseForStmt();
+	//}
 	return parseExprStmt();
 }
 
@@ -185,10 +185,10 @@ IfStmtNode* Parser::parseIfStmt()
 	expect(TokenType::RightParen);
 	ASTNode* thenBranch = parseStmt();
 	ASTNode* elseBranch = nullptr;
-	if (match(TokenType::Else))
-	{
-		elseBranch = parseStmt();
-	}
+	//if (match(TokenType::Else))
+	//{
+	//	elseBranch = parseStmt();
+	//}
 	return new IfStmtNode(cond, thenBranch, elseBranch);
 }
 
