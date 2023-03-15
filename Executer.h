@@ -15,14 +15,30 @@ class Executer
 		_func = 1,
 		_var = 2
 	};
+
+	struct FuncDefVar
+	{
+		bool defining = false;
+		int endnum = 0;
+		std::string name;
+		enum FuncDefType
+		{
+			_func = 0,
+			_if = 1,
+			_else = 2,
+			_for = 3
+		}type = _func;
+		Variable _ifparm;
+		void set(const std::string& n, FuncDefType t);
+		void del();
+	}funcDefVar;
+
 	Executer* father = nullptr;
 	std::map<std::string, SignType> sign_map;
 	std::map<std::string, Variable> var_map;
 	std::map<std::string, Function*> func_map;
 	Variable Calculate(const std::vector<Token>& tokens, int index);
 	bool isOccured(const std::string& name);
-	bool definingfunc = false;
-	std::string tempstr;
 public:
 	Executer() {}
 	Executer(Executer* parent) : father(parent) {}

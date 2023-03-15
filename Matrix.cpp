@@ -16,6 +16,11 @@ Matrix::Matrix(const Matrix& m) :col(m.col), row(m.row), is_valid(m.is_valid)
 		buffer[i] = m.buffer[i];
 }
 
+Matrix::~Matrix()
+{
+	delete[] buffer;
+}
+
 Matrix::Matrix(const std::string& token) : row(0), col(0), buffer(nullptr)
 {
 	is_valid = true;

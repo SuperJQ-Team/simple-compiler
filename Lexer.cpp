@@ -59,7 +59,7 @@ const std::map<std::string, OptionType> operators =
 
 	{"**",	OptionType::power}
 };
-const std::string keywords[] = { "let", "def", "end", "if", "for", "do", "while","return" };
+const std::string keywords[] = { "let", "def", "end", "if", "else", "for", "do", "while","return" };
 
 
 bool issign(char c)

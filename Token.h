@@ -13,16 +13,12 @@ enum class TokenType
 	String,
 	Matrix,
 	Function,
-	End,
 	BeforeOp,
 	LeftParen,
 	RightParen,
 	Comma,
-	If,
-	For,
-	Else,
 	Semicolon,
-
+	End,
 };
 
 class Token

@@ -129,7 +129,7 @@ Variable Executer::Calculate(const std::vector<Token>& tokens, int index)
 			//printf("deal with right paren \n");
 			if (i < 2)UI::PrintErr("Bad right parenthesis.");
 			std::stack<Variable> pam_stack;
-			if (tokens[i-2].type == TokenType::Function)
+			if (tokens[i - 2].type == TokenType::Function)
 			{
 				vars.push(GetFunction(opts.top().value)->run({}, this));
 				opts.pop();
@@ -543,16 +543,66 @@ Function* Executer::GetFunction(const std::string& name)
 Variable Executer::Execute(const std::vector<Token>& tokens)
 {
 	if (tokens.size() <= 0) return Variable::nul;
-	if (definingfunc)
+	if (funcDefVar.defining)
 	{
-		if (tokens[0].value == "end")
+		if (tokens[0].type == TokenType::Keyword)
 		{
-			UI::infunc = definingfunc = false;
-			if (father == nullptr && !UI::fileoutfig)
-				UI::PrintDefFunc(tempstr);
+			if (tokens[0].value == "end" && funcDefVar.endnum == 0)
+			{
+				UI::infunc = funcDefVar.defining = false;
+				if (funcDefVar.type == FuncDefVar::_func && father == nullptr && !UI::fileoutfig)
+					UI::PrintDefFunc(funcDefVar.name);
+				else if (funcDefVar.type == FuncDefVar::_if)
+				{
+					Variable v;
+					if (Variable::iftrue(funcDefVar._ifparm))v = func_map["@if"]->run({}, this);
+					delete func_map["@if"];
+					func_map.erase("@if");
+					var_map.erase("@if");
+				}
+				else if (funcDefVar.type == FuncDefVar::_else)
+				{
+					Variable v;
+					if (Variable::iftrue(funcDefVar._ifparm))v = func_map["@if"]->run({}, this);
+					else v = func_map["@else"]->run({}, this);
+					delete func_map["@if"]; delete func_map["@else"];
+					func_map.erase("@if"); func_map.erase("@else");
+					var_map.erase("@if"); var_map.erase("@else");
+				}
+			}
+			else if (tokens[0].value == "end")
+			{
+				funcDefVar.endnum--;
+				func_map[funcDefVar.name]->pushInstruction(tokens);
+			}
+			else if (tokens[0].value == "else" && funcDefVar.endnum == 0)
+			{
+				if (funcDefVar.type == FuncDefVar::_if)
+				{
+					std::string name = "@else";
+					std::vector<Token> ts;
+					for (int i = 1; i < tokens.size(); ++i)
+						ts.emplace_back(tokens[i]);
+
+					Function* func = new Function(name, {});
+					if (!ts.empty())
+						func->pushInstruction(ts);
+
+					funcDefVar.set(name, FuncDefVar::_else);
+					func_map[name] = func;
+					sign_map[name] = _func;
+				}
+			}
+			else if (tokens[0].value == "def" || tokens[0].value == "if" || tokens[0].value == "for")
+			{
+				funcDefVar.endnum++;
+				func_map[funcDefVar.name]->pushInstruction(tokens);
+			}
+			else
+				func_map[funcDefVar.name]->pushInstruction(tokens);
 		}
 		else
-			func_map[tempstr]->pushInstruction(tokens);
+			func_map[funcDefVar.name]->pushInstruction(tokens);
 		return Variable::nul;
 	}
 	for (Token token : tokens)
@@ -641,8 +691,14 @@ Variable Executer::Execute(const std::vector<Token>& tokens)
 			for (; i < tokens.size(); ++i)
 			{
 				if (tokens[i].type == TokenType::RightParen) break;
-				if (tokens[i].type == TokenType::Comma) continue;
-				argvs.emplace_back(tokens[i].value);
+				else if (tokens[i].type == TokenType::Comma) continue;
+				else if (tokens[i].type == TokenType::Variable)
+					argvs.emplace_back(tokens[i].value);
+				else
+				{
+					UI::PrintDefErr(name, "Illegal formal parameter found in definition");
+					return Variable::err;
+				}
 			}
 			if (i != tokens.size() - 1 || tokens[i].type != TokenType::RightParen)
 			{
@@ -660,20 +716,50 @@ Variable Executer::Execute(const std::vector<Token>& tokens)
 			{
 				func->pushInstruction(ts);
 			}
-			definingfunc = true;
+			funcDefVar.set(name, FuncDefVar::_func);
 			func_map[name] = func;
 			sign_map[name] = _func;
-			tempstr = name;
 			UI::infunc = true;
 			return Variable::nul;
 		}
 		else if (tokens[0].value == "return")
 		{
-			//UI::PrintLog("----------FUcK---------\n");
-			//UI::PrintTokens(tokens);
-			//UI::Print(Calculate(tokens, 1));
-			//UI::PrintLog("\n-----------------------\n");
 			return Calculate(tokens, 1);
+		}
+		else if (tokens[0].value == "if")
+		{
+			if (tokens[1].type != TokenType::LeftParen)
+				return Variable::err;
+			//¥¶¿Ìif
+			int i = 2;
+			std::vector<Token>bool_tokens;
+			std::string name = "@if";
+			for (; i < tokens.size(); ++i)
+			{
+				if (tokens[i].type == TokenType::RightParen) break;
+				bool_tokens.emplace_back(tokens[i]);
+			}
+			if (i != tokens.size() - 1 || tokens[i].type != TokenType::RightParen)
+			{
+				UI::PrintErr("The \'IF\' Cannot find \')\'");
+				return Variable::err;
+			}
+			++i;
+			std::vector<Token> ts;
+			for (; i < tokens.size(); ++i)
+				ts.emplace_back(tokens[i]);
+
+			Function* func = new Function(name, {});
+			if (!ts.empty())
+				func->pushInstruction(ts);
+
+			funcDefVar.set(name, FuncDefVar::_if);
+			funcDefVar._ifparm = Calculate(bool_tokens, 0);
+			func_map[name] = func;
+			sign_map[name] = _func;
+			if (father == nullptr)
+				UI::infunc = true;
+			return Variable::nul;
 		}
 		else
 		{
@@ -719,4 +805,17 @@ void Executer::RegisterFunction(const std::string& name, Function* func)
 		func_map[name] = func;
 	}
 
+}
+
+void Executer::FuncDefVar::set(const std::string& n, FuncDefType t)
+{
+	name = n;
+	type = t;
+	endnum = 0;
+	defining = true;
+}
+
+void Executer::FuncDefVar::del()
+{
+	defining = false;
 }
