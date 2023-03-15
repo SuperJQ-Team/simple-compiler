@@ -63,6 +63,7 @@ int main(int argc, char* argv[])
 			s = UI::GetInputLine();
 			if (s[0] == EOF)break;
 			vector<Token> tokens = Lexer::GetTokens(s);
+			//UI::PrintTokens(tokens);
 			ext.Execute(tokens);
 		}
 	}

@@ -64,7 +64,6 @@ void UI::Print(const Matrix& matrix)
 			if (sprintf(s, "%10lf", matrix.buffer[i * matrix.col + j]))(*osp) << s;
 		}
 	}
-	(*osp) << "\n";
 }
 void UI::Print(const std::string& str)
 {

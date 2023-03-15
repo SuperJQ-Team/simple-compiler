@@ -36,6 +36,15 @@ public:
 	static void RegisterGlobalFunc(Executer& executer);
 };
 
+class ForFunc :public Function
+{
+private:
+	std::vector<Token> init, judge, pass;
+public:
+	ForFunc(const std::vector<Token>& init, const std::vector<Token>& judge, const std::vector<Token>& pass);
+	Variable run(const std::stack<Variable>& args, Executer* parent = nullptr);
+};
+
 class WelcomeFunc : public Function
 {
 public:
@@ -59,3 +68,4 @@ class DetFunc : public Function
 public:
 	Variable run(const std::stack<Variable>& args, Executer* parent = nullptr);
 };
+
