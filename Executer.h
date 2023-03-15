@@ -27,7 +27,8 @@ class Executer
 			_if = 1,
 			_else = 2,
 			_for = 3
-		}type = _func;
+		}
+		type = _func;
 		Variable _ifparm;
 		void set(const std::string& n, FuncDefType t);
 		void del();
@@ -39,6 +40,8 @@ class Executer
 	std::map<std::string, Function*> func_map;
 	Variable Calculate(const std::vector<Token>& tokens, int index);
 	bool isOccured(const std::string& name);
+public:
+	bool ifreturn = false;
 public:
 	Executer() {}
 	Executer(Executer* parent) : father(parent) {}

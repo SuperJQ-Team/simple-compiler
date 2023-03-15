@@ -6,8 +6,14 @@
 #include "Token.h"
 #include "UI.h"
 #include "Var.h"
-
 class Executer;
+
+enum class FuncType
+{
+	_func,
+	_if,
+	_for,
+};
 
 class Function
 {
@@ -18,7 +24,7 @@ protected:
 	std::vector<std::string> arguments;
 
 public:
-
+	FuncType functype = FuncType::_func;
 	Function() {}
 	Function(std::string s, const std::vector<std::string>& argument) :name(s), arguments(argument) {}
 	Function(const Function& func) : instructions(instructions), name(name), arguments(arguments) {}
