@@ -559,6 +559,11 @@ Variable Executer::Execute(const std::vector<Token>& tokens)
 					delete func_map["@if"];
 					func_map.erase("@if");
 					var_map.erase("@if");
+					if (ifreturn)
+					{
+						ifreturn = false;
+						return v;
+					}
 				}
 				else if (funcDefVar.type == FuncDefVar::_else)
 				{
@@ -568,6 +573,11 @@ Variable Executer::Execute(const std::vector<Token>& tokens)
 					delete func_map["@if"]; delete func_map["@else"];
 					func_map.erase("@if"); func_map.erase("@else");
 					var_map.erase("@if"); var_map.erase("@else");
+					if (ifreturn)
+					{
+						ifreturn = false;
+						return v;
+					}
 				}
 			}
 			else if (tokens[0].value == "end")
@@ -724,6 +734,8 @@ Variable Executer::Execute(const std::vector<Token>& tokens)
 		}
 		else if (tokens[0].value == "return")
 		{
+			if (father != nullptr)
+				father->ifreturn = true;
 			return Calculate(tokens, 1);
 		}
 		else if (tokens[0].value == "if")

@@ -205,7 +205,8 @@ TokenType Automaton::getTokenType(State state, const Token& token)
 		if (token.value == ";")return TokenType::Semicolon;
 		return TokenType::Error;
 	}
-
+	if (state == Space)
+		return TokenType::End;
 	return TokenType::Error;
 }
 
