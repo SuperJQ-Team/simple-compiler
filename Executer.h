@@ -38,13 +38,13 @@ class Executer
 	std::map<std::string, SignType> sign_map;
 	std::map<std::string, Variable> var_map;
 	std::map<std::string, Function*> func_map;
-	
+
 	bool isOccured(const std::string& name);
 public:
 	bool ifreturn = false;
 public:
-	
-	Executer() {}
+
+	Executer();
 	Executer(Executer* parent) : father(parent) {}
 	~Executer();
 	Variable RunOption(const Variable& v1, const Variable& v2, const std::string& opt);

@@ -59,13 +59,21 @@ const std::map<std::string, OptionType> operators =
 
 	{"**",	OptionType::power}
 };
-const std::string keywords[] = { "let", "def", "end", "if", "else", "for", "do", "while","return" };
 
+const std::string keywords[] = { "let", "def", "end", "if", "else", "for", "do", "while","return" };
+const std::string befopt[] = { "-","~","+","!" };
 
 bool issign(char c)
 {
 	for (char x : sign)
 		if (c == x) return true;
+	return false;
+}
+
+bool isbefopt(const std::string& opt)
+{
+	for (auto x : befopt)
+		if (opt == x) return true;
 	return false;
 }
 bool isoperator(const std::string& last)
@@ -81,10 +89,6 @@ bool isKeyword(const std::string& sign)
 	}
 	return false;
 }
-
-
-
-
 
 OptionType __Lexer::GetOptType(const std::string& c)
 {
@@ -105,6 +109,7 @@ class Automaton
 		STRING,
 		MATRIX,
 		SPECIAL,
+		BEFOROPT,
 	};
 	enum CharType
 	{
@@ -119,10 +124,10 @@ class Automaton
 		Quotation,			// "
 		Comma,				// ,
 		Semicolon,			// ;
-		Operator
+		Operator,
 	};
 	const State state_trans[255][255] = {
-		//			Space,	Digit,		Alpha,		(,		),		{,		},		",		,,		;		Operator	
+		//			Space,	Digit,		Alpha,		(,		),		{,		},		",		,,		;		Operator		
 		{START,		START,	NUMBER,		VARIABLE,	SPECIAL,SPECIAL,MATRIX,	ERROR,	STRING,	SPECIAL,SPECIAL,OPERATOR},
 		{ERROR,		ERROR,	ERROR,		ERROR,		ERROR,	ERROR,	ERROR,	ERROR,	ERROR,	END,	END,	ERROR},
 		{END,		END,	END,		END,		END,	END,	END,	END,	END,	END,	END,	END},
@@ -316,7 +321,19 @@ std::vector<Token> Lexer::GetTokens(const std::string& target)
 		{
 			if (tokens[i - 1].type == TokenType::Variable && tokens[i].type == TokenType::LeftParen)
 				tokens[i - 1].type = TokenType::Function;
+			if ((tokens[i - 1].type == TokenType::Operator || tokens[i - 1].type == TokenType::BeforeOp ||
+				tokens[i - 1].type == TokenType::LeftParen || tokens[i - 1].type == TokenType::Comma || tokens[i - 1].type == TokenType::Semicolon)
+				&& tokens[i].type == TokenType::Operator)
+				if (isbefopt(tokens[i].value))
+					tokens[i].type = TokenType::BeforeOp;
+				else
+					tokens[i].type = TokenType::Error;
 		}
+		if (i == 0 && tokens[i].type == TokenType::Operator)
+			if (isbefopt(tokens[i].value))
+				tokens[i].type = TokenType::BeforeOp;
+			else
+				tokens[i].type = TokenType::Error;
 	}
 	return tokens;
 }

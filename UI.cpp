@@ -111,13 +111,14 @@ void UI::PrintToken(const Token& token)
 	auto getType = [](TokenType t) {
 		if (t == TokenType::Error) return "error";
 		if (t == TokenType::Number) return "number";
-		if (t == TokenType::Operator) return "option";
+		if (t == TokenType::Operator) return "operator";
 		if (t == TokenType::Keyword) return "keyword";
 		if (t == TokenType::Variable) return "variable";
 		if (t == TokenType::String) return "string";
 		if (t == TokenType::Matrix) return "matrix";
 		if (t == TokenType::Function)return "function";
 		if (t == TokenType::End)return "end";
+		if (t == TokenType::BeforeOp)return "beforoperator";
 		return "unknown";
 	};
 

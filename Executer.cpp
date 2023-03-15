@@ -97,13 +97,14 @@ int GetPriority(const std::string& opt)
 	return -1;
 }
 
+
+
 inline bool isvol(const std::string s)
 {
 	return s == "=" || s == "+=" || s == "-=" ||
 		s == "*=" || s == "/=" || s == "%=" ||
 		s == "&=" || s == "|=" || s == "^=" || s == "~=" ||
 		s == "<<=" || s == ">>=";
-
 }
 
 Variable Executer::Calculate(const std::vector<Token>& tokens, int index)
@@ -168,15 +169,31 @@ Variable Executer::Calculate(const std::vector<Token>& tokens, int index)
 		else if (tokens[i].type == TokenType::Operator || tokens[i].type == TokenType::LeftParen)
 		{
 			//printf("deal with operator %s\n", tokens[i].value.c_str());
-			while (!opts.empty() && opts.top().type != TokenType::LeftParen && GetPriority(opts.top().value) >= GetPriority(tokens[i].value))
+			while (!opts.empty() && opts.top().type != TokenType::LeftParen &&
+				(GetPriority(opts.top().value) >= GetPriority(tokens[i].value) || opts.top().type == TokenType::BeforeOp))
 			{
-				if (vars.size() < 2)return Variable::err;//ERROR;
-				Variable v1, v2;
-				v2 = vars.top(); vars.pop();
-				v1 = vars.top(); vars.pop();
-				vars.push(RunOption(v1, v2, opts.top().value));
-				opts.pop();
+				if (opts.top().type != TokenType::BeforeOp)
+				{
+					if (vars.size() < 2)return Variable::err;//ERROR;
+					Variable v1, v2;
+					v2 = vars.top(); vars.pop();
+					v1 = vars.top(); vars.pop();
+					vars.push(RunOption(v1, v2, opts.top().value));
+					opts.pop();
+				}
+				else
+				{
+					if (vars.size() < 1)return Variable::err;//ERROR;
+					Variable v1;
+					v1 = vars.top(); vars.pop();
+					vars.push(RunOption(v1, Variable::nul, opts.top().value));
+					opts.pop();
+				}
 			}
+			opts.push(tokens[i]);
+		}
+		else if (tokens[i].type == TokenType::BeforeOp)
+		{
 			opts.push(tokens[i]);
 		}
 		else if (tokens[i].type == TokenType::Comma)
@@ -184,12 +201,23 @@ Variable Executer::Calculate(const std::vector<Token>& tokens, int index)
 			//printf("deal with Comma \n");
 			while (!opts.empty() && opts.top().type != TokenType::Comma && opts.top().type != TokenType::Function)
 			{
-				if (vars.size() < 2)return Variable::err;//ERROR;
-				Variable v1, v2;
-				v2 = vars.top(); vars.pop();
-				v1 = vars.top(); vars.pop();
-				vars.push(RunOption(v1, v2, opts.top().value));
-				opts.pop();
+				if (opts.top().type != TokenType::BeforeOp)
+				{
+					if (vars.size() < 2)return Variable::err;//ERROR;
+					Variable v1, v2;
+					v2 = vars.top(); vars.pop();
+					v1 = vars.top(); vars.pop();
+					vars.push(RunOption(v1, v2, opts.top().value));
+					opts.pop();
+				}
+				else
+				{
+					if (vars.size() < 1)return Variable::err;//ERROR;
+					Variable v1;
+					v1 = vars.top(); vars.pop();
+					vars.push(RunOption(v1, Variable::nul, opts.top().value));
+					opts.pop();
+				}
 			}
 			opts.push(tokens[i]);
 		}
@@ -201,12 +229,23 @@ Variable Executer::Calculate(const std::vector<Token>& tokens, int index)
 	}
 	while (!opts.empty())
 	{
-		if (vars.size() < 2)return Variable::err;//ERROR;
-		Variable v1, v2;
-		v2 = vars.top(); vars.pop();
-		v1 = vars.top(); vars.pop();
-		vars.push(RunOption(v1, v2, opts.top().value));
-		opts.pop();
+		if (opts.top().type != TokenType::BeforeOp)
+		{
+			if (vars.size() < 2)return Variable::err;//ERROR;
+			Variable v1, v2;
+			v2 = vars.top(); vars.pop();
+			v1 = vars.top(); vars.pop();
+			vars.push(RunOption(v1, v2, opts.top().value));
+			opts.pop();
+		}
+		else
+		{
+			if (vars.size() < 1)return Variable::err;//ERROR;
+			Variable v1;
+			v1 = vars.top(); vars.pop();
+			vars.push(RunOption(v1, Variable::nul, opts.top().value));
+			opts.pop();
+		}
 	}
 	if (vars.size() != 1) return Variable::err;
 	if (vars.top().type == __Variable::_varible)return GetValue(vars.top());
@@ -219,6 +258,11 @@ bool Executer::isOccured(const std::string& name)
 	return false;
 }
 
+Executer::Executer()
+{
+	Function::RegisterGlobalFunc(*this);
+}
+
 
 Executer::~Executer()
 {
@@ -228,6 +272,95 @@ Executer::~Executer()
 
 Variable Executer::RunOption(const Variable& _v1, const Variable& _v2, const std::string& opt)
 {
+	if (_v2.type == __Variable::_null)
+	{
+		Variable v, v1 = _v1;
+		OptionType opty = __Lexer::GetOptType(opt);
+		if (opty == OptionType::error_option)
+		{
+			v.type = __Variable::_error;
+			return v;
+		}
+		if (v1.type == __Variable::_varible) v1 = GetValue(*(std::string*)(v1.value));
+		if (v1.type == __Variable::_int)
+		{
+			int& x = *(int*)v1.value;
+			switch (opty)
+			{
+			case OptionType::plus:
+				v.type = __Variable::_int;
+				v.value = new int(+x);
+				break;
+			case OptionType::minus:
+				v.type = __Variable::_int;
+				v.value = new int(-x);
+				break;
+			case OptionType::bitnot:
+				v.type = __Variable::_int;
+				v.value = new int(~x);
+				break;
+			default:
+				v.type = __Variable::_error;
+				return v;
+			}
+		}
+		else if (v1.type == __Variable::_float)
+		{
+			double& x = *(double*)v1.value;
+			switch (opty)
+			{
+			case OptionType::plus:
+				v.type = __Variable::_float;
+				v.value = new double(+x);
+				break;
+			case OptionType::minus:
+				v.type = __Variable::_float;
+				v.value = new double(-x);
+				break;
+			default:
+				v.type = __Variable::_error;
+				return v;
+			}
+		}
+		else if (v1.type == __Variable::_bool)
+		{
+			bool& x = *(bool*)v1.value;
+			switch (opty)
+			{
+			case OptionType::logicnot:
+				v.type = __Variable::_bool;
+				v.value = new bool(!x);
+				break;
+			default:
+				v.type = __Variable::_error;
+				return v;
+			}
+		}
+		else if (v1.type == __Variable::_matrix)
+		{
+			Matrix& x = *(Matrix*)v1.value;
+			switch (opty)
+			{
+			case OptionType::plus:
+				v.type = __Variable::_matrix;
+				v.value = new Matrix(x);
+				break;
+				//case OptionType::minus:
+					//v.type = __Variable::_matrix;
+					//v.value = new Matrix(-x);
+					//break;
+			default:
+				v.type = __Variable::_error;
+				return v;
+			}
+		}
+		else
+		{
+			v.type = __Variable::_error;
+			v.value = nullptr;
+		}
+		return v;
+	}
 	Variable v1 = _v1, v2 = _v2;
 	if (isvol(opt))
 	{
@@ -268,7 +401,8 @@ Variable Executer::RunOption(const Variable& _v1, const Variable& _v2, const std
 			break;
 		case OptionType::division:
 			v.type = __Variable::_int;
-			v.value = new int(x1 / x2);
+			if (x2 == 0)v.type = __Variable::_error;
+			else v.value = new int(x1 / x2);
 			break;
 		case OptionType::modulo:
 			v.type = __Variable::_int;
