@@ -97,14 +97,13 @@ int GetPriority(const std::string& opt)
 	return -1;
 }
 
+std::string volsig[] = { "=" , "+=" , "-=" , "*=" , "/=" , "%=" , "&=" ,"|=", "^=" , "~=" ,"<<=" , ">>=" };
 
-
-inline bool isvol(const std::string s)
+inline bool isvol(const std::string opt)
 {
-	return s == "=" || s == "+=" || s == "-=" ||
-		s == "*=" || s == "/=" || s == "%=" ||
-		s == "&=" || s == "|=" || s == "^=" || s == "~=" ||
-		s == "<<=" || s == ">>=";
+	for (auto x : volsig)
+		if (opt == x) return true;
+	return false;
 }
 
 Variable Executer::Calculate(const std::vector<Token>& tokens, int index)
@@ -369,7 +368,287 @@ Variable Executer::RunOption(const Variable& _v1, const Variable& _v2, const std
 		if (opt == "=")GetValue(*(std::string*)(v1.value)) = v2;
 		else
 		{
-			return Variable::err;
+			OptionType opty = __Lexer::GetOptType(opt);
+			Variable& v = GetValue(*(std::string*)(v1.value));
+			if (v.type == __Variable::_int)
+			{
+				if (v2.type == __Variable::_int)
+				{
+					int& x = *(int*)v2.value;
+					switch (opty)
+					{
+					case OptionType::error_option:
+						v.type = __Variable::_error;
+						return _v1;
+					case OptionType::plusis:
+						v.type = __Variable::_int;
+						*(int*)v.value += x;
+						break;
+					case OptionType::minusis:
+						v.type = __Variable::_int;
+						*(int*)v.value -= x;
+						break;
+					case OptionType::timesis:
+						v.type = __Variable::_int;
+						*(int*)v.value *= x;
+						break;
+					case OptionType::divisionis:
+						v.type = __Variable::_int;
+						if (x == 0)v.type = __Variable::_error;
+						else *(int*)v.value /= x;
+						break;
+					case OptionType::modulois:
+						v.type = __Variable::_int;
+						*(int*)v.value %= x;
+						break;
+					case OptionType::andis:
+						v.type = __Variable::_int;
+						*(int*)v.value &= x;
+						break;
+					case OptionType::oris:
+						v.type = __Variable::_int;
+						*(int*)v.value |= x;
+						break;
+					case OptionType::xoris:
+						v.type = __Variable::_int;
+						*(int*)v.value ^= x;
+						break;
+					case OptionType::right_moveis:
+						v.type = __Variable::_int;
+						*(int*)v.value >>= x;
+						break;
+					case OptionType::left_moveis:
+						v.type = __Variable::_int;
+						*(int*)v.value <<= x;
+						break;
+					default:
+						v.type = __Variable::_error;
+						return _v1;
+					}
+				}
+				else if (v2.type == __Variable::_float)
+				{
+					double& x = *(double*)v2.value;
+					switch (opty)
+					{
+					case OptionType::error_option:
+						v.type = __Variable::_error;
+						return _v1;
+					case OptionType::plusis:
+						v.type = __Variable::_int;
+						*(int*)v.value += x;
+						break;
+					case OptionType::minusis:
+						v.type = __Variable::_int;
+						*(int*)v.value -= x;
+						break;
+					case OptionType::timesis:
+						v.type = __Variable::_int;
+						*(int*)v.value *= x;
+						break;
+					case OptionType::divisionis:
+						v.type = __Variable::_int;
+						*(int*)v.value /= x;
+						break;
+					default:
+						v.type = __Variable::_error;
+						return _v1;
+					}
+				}
+				else
+				{
+					v.type = __Variable::_error;
+					return _v1;
+				}
+			}
+			else if (v.type == __Variable::_float)
+			{
+				if (v2.type == __Variable::_int || v2.type == __Variable::_float)
+				{
+					double x = v2.type == __Variable::_int ? *(int*)v2.value : *(double*)v2.value;
+					switch (opty)
+					{
+					case OptionType::error_option:
+						v.type = __Variable::_error;
+						return _v1;
+					case OptionType::plusis:
+						v.type = __Variable::_float;
+						*(double*)v.value += x;
+						break;
+					case OptionType::minusis:
+						v.type = __Variable::_float;
+						*(double*)v.value -= x;
+						break;
+					case OptionType::timesis:
+						v.type = __Variable::_float;
+						*(double*)v.value *= x;
+						break;
+					case OptionType::divisionis:
+						v.type = __Variable::_float;
+						if (x == 0)v.type = __Variable::_error;
+						else *(double*)v.value /= x;
+						break;
+					default:
+						v.type = __Variable::_error;
+						return _v1;
+					}
+				}
+				else
+				{
+					v.type = __Variable::_error;
+					return _v1;
+				}
+			}
+			else if (v.type == __Variable::_string)
+			{
+				if (v2.type == __Variable::_string)
+				{
+					std::string& x = *(std::string*)v2.value;
+					switch (opty)
+					{
+					case OptionType::error_option:
+						v.type = __Variable::_error;
+						return _v1;
+					case OptionType::plusis:
+						v.type = __Variable::_string;
+						*(std::string*)v.value += x;
+						break;
+					default:
+						v.type = __Variable::_error;
+						return _v1;
+					}
+				}
+				else if (v2.type == __Variable::_int)
+				{
+					int& x = *(int*)v2.value;
+					switch (opty)
+					{
+					case OptionType::error_option:
+						v.type = __Variable::_error;
+						return _v1;
+					//case OptionType::timesis:
+					//	v.type = __Variable::_string;
+					//	*(std::string*)v.value = x;
+					//	break;
+					default:
+						v.type = __Variable::_error;
+						return _v1;
+					}
+				}
+				else
+				{
+					v.type = __Variable::_error;
+					return _v1;
+				}
+			}
+			else if (v.type == __Variable::_bool)
+			{
+				if (v2.type == __Variable::_int)
+				{
+					int& x = *(int*)v2.value;
+					switch (opty)
+					{
+					case OptionType::error_option:
+						v.type = __Variable::_error;
+						return _v1;
+					case OptionType::andis:
+						v.type = __Variable::_bool;
+						*(bool*)v.value &= x ? true : false;
+						break;
+					case OptionType::oris:
+						v.type = __Variable::_bool;
+						*(bool*)v.value |= x ? true : false;
+						break;
+					case OptionType::xoris:
+						v.type = __Variable::_bool;
+						*(bool*)v.value ^= x ? true : false;
+						break;
+					default:
+						v.type = __Variable::_error;
+						return _v1;
+					}
+				}
+				if (v2.type == __Variable::_bool)
+				{
+					bool& x = *(bool*)v2.value;
+					switch (opty)
+					{
+					case OptionType::error_option:
+						v.type = __Variable::_error;
+						return _v1;
+					case OptionType::andis:
+						v.type = __Variable::_bool;
+						*(bool*)v.value &= x;
+						break;
+					case OptionType::oris:
+						v.type = __Variable::_bool;
+						*(bool*)v.value |= x;
+						break;
+					case OptionType::xoris:
+						v.type = __Variable::_bool;
+						*(bool*)v.value ^= x;
+						break;
+					default:
+						v.type = __Variable::_error;
+						return _v1;
+					}
+				}
+				else
+				{
+					v.type = __Variable::_error;
+					return _v1;
+				}
+			}
+			else if (v.type == __Variable::_matrix)
+			{
+				if (v2.type == __Variable::_int || v2.type == __Variable::_float)
+				{
+					double x = (v2.type == __Variable::_int) ? *(int*)v2.value : *(double*)v2.value;
+					switch (opty)
+					{
+					case OptionType::error_option:
+						v.type = __Variable::_error;
+						return _v1;
+					case OptionType::timesis:
+						v.type = __Variable::_matrix;
+						*(Matrix*)v.value = x * *(Matrix*)v.value;
+						break;
+					case OptionType::divisionis:
+						v.type = __Variable::_matrix;
+						*(Matrix*)v.value = (1 / x) * *(Matrix*)v.value;
+						break;
+					default:
+						v.type = __Variable::_error;
+						return _v1;
+					}
+				}
+				else if (v2.type == __Variable::_matrix)
+				{
+					Matrix& x = *(Matrix*)v2.value;
+					switch (opty)
+					{
+					case OptionType::error_option:
+						v.type = __Variable::_error;
+						return _v1;
+					case OptionType::timesis:
+						v.type = __Variable::_int;
+						*(Matrix*)v.value = *(Matrix*)v.value * x;
+						break;
+					case OptionType::plus:
+						v.type = __Variable::_int;
+						*(Matrix*)v.value = *(Matrix*)v.value + x;
+						break;
+					default:
+						v.type = __Variable::_error;
+						return _v1;
+					}
+				}
+				else
+				{
+					v.type = __Variable::_error;
+					return _v1;
+				}
+			}
 		}
 		return _v1;
 	}

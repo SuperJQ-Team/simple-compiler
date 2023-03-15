@@ -25,7 +25,6 @@ int main(int argc, char* argv[])
 	ifstream fin;
 	string s;
 	Executer ext;
-	Function::RegisterGlobalFunc(ext);
 	if (argc >= 2)
 	{
 		string file(argv[argc - 1]);
@@ -63,7 +62,6 @@ int main(int argc, char* argv[])
 			s = UI::GetInputLine();
 			if (s[0] == EOF)break;
 			vector<Token> tokens = Lexer::GetTokens(s);
-			UI::PrintTokens(tokens);
 			ext.Execute(tokens);
 		}
 	}
