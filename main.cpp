@@ -10,9 +10,7 @@
 #include <fstream>
 #include "Lexer.h"
 #include "Matrix.h"
-#include "Parser.h"
 #include "Executer.h"
-#include "ASTNode.h"
 #include "UI.h"
 #include "Function.h"
 
@@ -29,7 +27,7 @@ int main(int argc, char* argv[])
 	{
 		string file(argv[argc - 1]);
 		fin.open(file);
-		if (!fin)UI::PrintErr("cannot find file!\n");
+		if (!fin)UI::PrintErr("Cannot find file!\n");
 		else
 		{
 			{
@@ -48,7 +46,7 @@ int main(int argc, char* argv[])
 				if ((!tokens.empty() && tokens.back().type == TokenType::Error) || ans.type == __Variable::_error)
 				{
 					UI::PrintLog("\n");
-					UI::PrintErr("unknowing error!");
+					UI::PrintErr("Unknown error!");
 					break;
 				}
 			}

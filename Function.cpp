@@ -43,6 +43,7 @@ void Function::RegisterGlobalFunc(Executer& executer)
 	executer.RegisterFunction("welcome", new WelcomeFunc());
 	executer.RegisterFunction("help", new HelpFunc());
 	executer.RegisterFunction("det", new DetFunc());
+	executer.RegisterFunction("E", new EFunc());
 }
 
 Variable WelcomeFunc::run(const std::stack<Variable>& args, Executer* parent)
@@ -72,7 +73,9 @@ Help:\n \
 Global Functions: \n \
 help(): Show this info\n \
 print([args]): print someting...\n \
+println([args]): print someting with enter... \n \
 welcome(): print welcome-info\n \
+det(Matrix): calculate matrix determinant \n \
 \n \
 Keywords: \n \
 let VAR_NAME (= VALUE)*: define variable as VAR_NAME (and initialized as VALUE)\n \
@@ -152,4 +155,39 @@ Variable PrintLnFunc::run(const std::stack<Variable>& _args, Executer* parent)
 		args.pop();
 	}
 	return Variable::nul;
+}
+
+Variable EFunc::run(const std::stack<Variable>& _args, Executer* parent)
+{
+	std::stack<Variable> args = _args;
+	if (args.empty() || args.top().type != __Variable::_int) return Variable::err;
+	int k = *((int*)(args.top().value));
+	args.pop();
+	if (args.size() != 0 && args.size() != 2) return Variable::err;
+	int ia = -1, ib = -1;
+	if (args.size() == 2)
+	{
+		if (args.top().type != __Variable::_int) return Variable::err;
+		ia = *((int*)args.top().value) - 1;
+		args.pop();
+		if (args.top().type != __Variable::_int) return Variable::err;
+		ib = *((int*)args.top().value) - 1;
+		args.pop();
+		if (ia >= k || ib >= k) return Variable::err;
+	}
+	Variable var(__Variable::_matrix);
+	var.value = new Matrix(k, k);
+	Matrix* m = (Matrix*)var.value;
+	for (int i = 0; i < k; ++i)
+	{
+		m->buffer[i * k + i] = 1;
+	}
+	if (ia != -1 && ib != -1)
+	{
+		m->buffer[ia * k + ia] = 0;
+		m->buffer[ia * k + ib] = 1;
+		m->buffer[ib * k + ib] = 0;
+		m->buffer[ib * k + ia] = 1;
+	}
+	return var;
 }
