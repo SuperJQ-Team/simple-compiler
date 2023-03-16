@@ -6,6 +6,42 @@
 #include "Matrix.h"
 #include "Function.h"
 
+Matrix quickpow(Matrix ma, int n)
+{
+	std::stack<Variable> parmv;
+	parmv.push(Variable(__Variable::_int, new int(ma.GetCol())));
+	Matrix ans = *(Matrix*)EFunc().run(parmv).value;
+	while (n)
+	{
+		if (n & 1)ans = ans * ma;
+		ma = ma * ma;
+		n >>= 1;
+	}
+	return ans;
+}
+
+double quickpow(double ma, int n)
+{
+	double ans = 1;
+	while (n)
+	{
+		if (n & 1)ans = ans * ma;
+		ma = ma * ma;
+		n >>= 1;
+	}
+	return ans;
+}
+
+std::string circstring(const std::string& s, int x)
+{
+	if (x <= 0)return "";
+	std::string ans;
+	do
+		ans += s;
+	while (--x);
+	return ans;
+}
+
 int GetPriority(const std::string& opt)
 {
 	OptionType opty = __Lexer::GetOptType(opt);
@@ -112,7 +148,10 @@ Variable Executer::Calculate(const std::vector<Token>& tokens, int index)
 	std::stack<Variable> vars;
 	for (int i = index; i < tokens.size(); ++i)
 	{
-
+		if (tokens[i].type == TokenType::End || tokens[i].type == TokenType::Semicolon)
+		{
+			break;
+		}
 		if (tokens[i].type == TokenType::Function)
 		{
 			if (GetFunction(tokens[i].value) == nullptr)
@@ -140,7 +179,9 @@ Variable Executer::Calculate(const std::vector<Token>& tokens, int index)
 				{
 					if (opts.top().type == TokenType::Comma)
 					{
-						if (vars.top().type == __Variable::_varible)pam_stack.push(GetValue(vars.top()));
+						auto& x = GetValue(vars.top());
+						if (x.type == __Variable::_error)return Variable::err;
+						if (vars.top().type == __Variable::_varible)pam_stack.push(x);
 						else pam_stack.push(vars.top());
 						vars.pop();
 						opts.pop();
@@ -157,7 +198,9 @@ Variable Executer::Calculate(const std::vector<Token>& tokens, int index)
 				}
 				if (opts.top().type == TokenType::Function)
 				{
-					if (vars.top().type == __Variable::_varible)pam_stack.push(GetValue(vars.top()));
+					auto& x = GetValue(vars.top());
+					if (x.type == __Variable::_error)return Variable::err;
+					if (vars.top().type == __Variable::_varible)pam_stack.push(x);
 					else pam_stack.push(vars.top());
 					vars.pop();
 					vars.push(GetFunction(opts.top().value)->run(pam_stack, this));
@@ -344,10 +387,10 @@ Variable Executer::RunOption(const Variable& _v1, const Variable& _v2, const std
 				v.type = __Variable::_matrix;
 				v.value = new Matrix(x);
 				break;
-				//case OptionType::minus:
-					//v.type = __Variable::_matrix;
-					//v.value = new Matrix(-x);
-					//break;
+			case OptionType::minus:
+				v.type = __Variable::_matrix;
+				v.value = new Matrix(-x);
+				break;
 			default:
 				v.type = __Variable::_error;
 				return v;
@@ -526,10 +569,10 @@ Variable Executer::RunOption(const Variable& _v1, const Variable& _v2, const std
 					case OptionType::error_option:
 						v.type = __Variable::_error;
 						return _v1;
-					//case OptionType::timesis:
-					//	v.type = __Variable::_string;
-					//	*(std::string*)v.value = x;
-					//	break;
+					case OptionType::timesis:
+						v.type = __Variable::_string;
+						*(std::string*)v.value = circstring(*(std::string*)v.value, x);
+						break;
 					default:
 						v.type = __Variable::_error;
 						return _v1;
@@ -733,7 +776,7 @@ Variable Executer::RunOption(const Variable& _v1, const Variable& _v2, const std
 			break;
 		case OptionType::power:
 			v.type = __Variable::_int;
-			v.value = new int(pow(x1, x2));
+			v.value = new int(quickpow(x1, x2));
 			break;
 		default:
 			v.type = __Variable::_error;
@@ -846,6 +889,44 @@ Variable Executer::RunOption(const Variable& _v1, const Variable& _v2, const std
 			return v;
 		}
 	}
+	else if (v1.type == __Variable::_int && v2.type == __Variable::_string)
+	{
+		int& x1 = *(int*)v1.value;
+		std::string& x2 = *(std::string*)v2.value;
+		OptionType opty = __Lexer::GetOptType(opt);
+		switch (opty)
+		{
+		case OptionType::error_option:
+			v.type = __Variable::_error;
+			return v;
+		case OptionType::times:
+			v.type = __Variable::_string;
+			v.value = new std::string(circstring(x2, x1));
+			break;
+		default:
+			v.type = __Variable::_error;
+			return v;
+		}
+	}
+	else if (v1.type == __Variable::_string && v2.type == __Variable::_int)
+	{
+		int& x1 = *(int*)v2.value;
+		std::string& x2 = *(std::string*)v1.value;
+		OptionType opty = __Lexer::GetOptType(opt);
+		switch (opty)
+		{
+		case OptionType::error_option:
+			v.type = __Variable::_error;
+			return v;
+		case OptionType::times:
+			v.type = __Variable::_string;
+			v.value = new std::string(circstring(x2, x1));
+			break;
+		default:
+			v.type = __Variable::_error;
+			return v;
+		}
+	}
 	else if (v1.type == __Variable::_matrix && v2.type == __Variable::_matrix)
 	{
 		Matrix& x1 = *(Matrix*)v1.value, & x2 = *(Matrix*)v2.value;
@@ -887,6 +968,60 @@ Variable Executer::RunOption(const Variable& _v1, const Variable& _v2, const std
 		case OptionType::times:
 			v.type = __Variable::_matrix;
 			v.value = new Matrix(x1 * x2);
+			break;
+		default:
+			v.type = __Variable::_error;
+			return v;
+		}
+	}
+	else if (v1.type == __Variable::_matrix && v2.type == __Variable::_int)
+	{
+		int x2 = *(int*)v2.value;
+		Matrix& x1 = *(Matrix*)v1.value;
+		OptionType opty = __Lexer::GetOptType(opt);
+		switch (opty)
+		{
+		case OptionType::error_option:
+			v.type = __Variable::_error;
+			return v;
+		case OptionType::times:
+			v.type = __Variable::_matrix;
+			v.value = new Matrix(x2 * x1);
+			break;
+		case OptionType::division:
+			v.type = __Variable::_matrix;
+			v.value = new Matrix((1.0 / x2) * x1);
+			break;
+		case OptionType::power:
+			v.type = __Variable::_matrix;
+			v.value = new Matrix(quickpow(x1, x2));
+			break;
+		default:
+			v.type = __Variable::_error;
+			return v;
+		}
+	}
+	else if (v1.type == __Variable::_matrix && v2.type == __Variable::_float)
+	{
+		double x2 = *(double*)v2.value;
+		Matrix& x1 = *(Matrix*)v1.value;
+		OptionType opty = __Lexer::GetOptType(opt);
+		switch (opty)
+		{
+		case OptionType::error_option:
+			v.type = __Variable::_error;
+			return v;
+		case OptionType::times:
+			v.type = __Variable::_matrix;
+			v.value = new Matrix(x2 * x1);
+			break;
+		case OptionType::division:
+			v.type = __Variable::_matrix;
+			v.value = new Matrix((1.0 / x2) * x1);
+			break;
+		case OptionType::power:
+			v.type = __Variable::_matrix;
+			v.value = new Matrix(quickpow(x1, x2));
 			break;
 		default:
 			v.type = __Variable::_error;
@@ -989,6 +1124,8 @@ Variable Executer::Execute(const std::vector<Token>& tokens)
 					if (ifreturn)
 					{
 						ifreturn = false;
+						if (father != nullptr)
+							father->ifreturn = true;
 						return v;
 					}
 				}
@@ -1002,6 +1139,8 @@ Variable Executer::Execute(const std::vector<Token>& tokens)
 					if (ifreturn)
 					{
 						ifreturn = false;
+						if (father != nullptr)
+							father->ifreturn = true;
 						return v;
 					}
 				}
@@ -1079,7 +1218,7 @@ Variable Executer::Execute(const std::vector<Token>& tokens)
 				UI::PrintDefErr(tokens[1].value, "This sign is already existed");
 				return Variable::nul;
 			}
-			if (tokens.size() < 3)
+			if (tokens.size() < 3 || (tokens.size() == 3 && tokens[2].type == TokenType::Semicolon))
 			{
 				sign_map[name] = _var;
 				var_map[name] = Variable::nul;
@@ -1160,6 +1299,10 @@ Variable Executer::Execute(const std::vector<Token>& tokens)
 		}
 		else if (tokens[0].value == "return")
 		{
+			if (ifreturn)
+			{
+				ifreturn = false;
+			}
 			if (father != nullptr)
 				father->ifreturn = true;
 			return Calculate(tokens, 1);

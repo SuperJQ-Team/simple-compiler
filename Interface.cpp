@@ -75,6 +75,7 @@ const char* __stdcall FileOpen(const char* file)
 		c[i] = '.'; c[i + 1] = '.'; c[i + 2] = '.';
 		c[i + 3] = '\0';
 	}
+	UI::fileoutfig = false;
 	UI::SetOS(cout);
 	return c;
 }

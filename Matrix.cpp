@@ -141,6 +141,14 @@ Matrix& Matrix::operator = (const Matrix& m)
 	return *this;
 }
 
+ double* Matrix::operator[](int i)
+{
+	if (is_valid)
+		return (buffer + i * col);
+	else
+		return nullptr;
+}
+
 Matrix operator * (const Matrix& ma, const Matrix& mb)
 {
 	if (ma.col != mb.row)
@@ -198,6 +206,22 @@ Matrix operator - (const Matrix& ma, const Matrix& mb)
 	for (int i = 0; i < result.row * result.col; ++i)
 	{
 		result.buffer[i] -= mb.buffer[i];
+	}
+	return result;
+}
+
+Matrix operator-(const Matrix& ma)
+{
+	if (!ma.is_valid)
+	{
+		Matrix result(1, 1);
+		result.is_valid = false;
+		return result;
+	}
+	Matrix result = ma;
+	for (int i = 0; i < result.row * result.col; ++i)
+	{
+		result.buffer[i] = -result.buffer[i];
 	}
 	return result;
 }

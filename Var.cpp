@@ -3,20 +3,25 @@
 #include "Executer.h"
 #include "Function.h"
 
-using namespace __Variable;
 
-Variable Variable::err(_error);
-Variable Variable::nul(_null);
+Variable Variable::err(__Variable::_error);
+Variable Variable::nul(__Variable::_null);
 
 Variable::Variable()
 {
-	type =  _null;
+	type = __Variable::_null;
 	value = nullptr;
 }
 
-Variable::Variable(Type type) :type(type)
+Variable::Variable(__Variable type) :type(type)
 {
-	if (type == _null || type == _error)
+	if (type == __Variable::_null || type == __Variable::_error)
+		value = nullptr;
+}
+
+Variable::Variable(__Variable type, void* ptr) :type(type), value(ptr)
+{
+	if (type == __Variable::_null || type == __Variable::_error)
 		value = nullptr;
 }
 
@@ -29,18 +34,20 @@ Variable::Variable(const Variable& var)
 {
 	if (value != nullptr)delete value;
 	type = var.type;
-	if (type == _null)
+	if (type == __Variable::_null)
 		value = nullptr;
-	if (type == _int)
+	else if (type == __Variable::_int)
 		value = new int(*(int*)(var.value));
-	if (type == _float)
+	else if (type == __Variable::_float)
 		value = new double(*(double*)(var.value));
-	if (type == _string || type == _definelog || type == _varible)
+	else if (type == __Variable::_string || type == __Variable::_definelog || type == __Variable::_varible)
 		value = new std::string(*(std::string*)(var.value));
-	if (type == _matrix)
+	else if (type == __Variable::_matrix)
 		value = new Matrix(*(Matrix*)(var.value));
-	if (type == _bool)
+	else if (type == __Variable::_bool)
 		value = new bool(*(bool*)(var.value));
+	else if (type == __Variable::_error)
+		value = nullptr;
 }
 
 Variable& Variable::operator=(const Variable& var)
@@ -48,19 +55,20 @@ Variable& Variable::operator=(const Variable& var)
 	if (this == &var) return *this;
 	del();
 	type = var.type;
-	if (type == _null)
+	if (type == __Variable::_null)
 		value = nullptr;
-	if (type == _int)
+	else if (type == __Variable::_int)
 		value = new int(*(int*)(var.value));
-	if (type == _float)
+	else if (type == __Variable::_float)
 		value = new double(*(double*)(var.value));
-	if (type == _string || type == _definelog || type == _varible)
+	else if (type == __Variable::_string || type == __Variable::_definelog || type == __Variable::_varible)
 		value = new std::string(*(std::string*)(var.value));
-	if (type == _matrix)
+	else if (type == __Variable::_matrix)
 		value = new Matrix(*(Matrix*)(var.value));
-	if (type == _bool)
+	else if (type == __Variable::_bool)
 		value = new bool(*(bool*)(var.value));
-
+	else if (type == __Variable::_error)
+		value = nullptr;
 	return *this;
 }
 
@@ -85,35 +93,35 @@ void Variable::set(const Token& token)
 					return;
 				}
 		}
-		if (!ifd)
+		if (!ifd && val < 2147483647)
 		{
-			type = _int;
+			type = __Variable::_int;
 			value = new int((int)val);
 		}
 		else
 		{
-			type = _float;
+			type = __Variable::_float;
 			value = new double(val / ws);
 		}
 	}
 	else if (token.type == TokenType::String)
 	{
-		type = _string;
+		type = __Variable::_string;
 		value = new std::string(token.value);
 	}
 	else if (token.type == TokenType::Matrix)
 	{
-		type = _matrix;
+		type = __Variable::_matrix;
 		value = new Matrix(token.value);
 	}
 	else if (token.type == TokenType::Variable)
 	{
-		type = _varible;
+		type = __Variable::_varible;
 		value = new std::string(token.value);
 	}
 	else
 	{
-		type = _null;
+		type = __Variable::_null;
 		value = nullptr;
 	}
 }
@@ -121,9 +129,9 @@ void Variable::set(const Token& token)
 void Variable::del()
 {
 	if (value == nullptr)return;
-	if (type == _string || type == _definelog || type == _varible)
+	if (type == __Variable::_string || type == __Variable::_definelog || type == __Variable::_varible)
 		delete (std::string*)(value);
-	else if (type == _matrix)
+	else if (type == __Variable::_matrix)
 		delete(Matrix*)(value);
 	else delete value;
 }
@@ -131,16 +139,16 @@ void Variable::del()
 Variable Variable::deflog(const std::string& s)
 {
 	auto v = Variable();
-	v.type = _definelog;
+	v.type = __Variable::_definelog;
 	v.value = new std::string(s);
 	return v;
 }
 
 bool Variable::iftrue(const Variable& var)
 {
-	if (var.type == _bool)
+	if (var.type == __Variable::_bool)
 		return *(bool*)var.value;
-	else if (var.type == _int)
+	else if (var.type == __Variable::_int)
 		return (bool)*(int*)var.value;
 	else return false;
 }

@@ -44,6 +44,7 @@ void Function::RegisterGlobalFunc(Executer& executer)
 	executer.RegisterFunction("help", new HelpFunc());
 	executer.RegisterFunction("det", new DetFunc());
 	executer.RegisterFunction("E", new EFunc());
+	executer.RegisterFunction("T", new TFunc());
 }
 
 Variable WelcomeFunc::run(const std::stack<Variable>& args, Executer* parent)
@@ -72,8 +73,8 @@ Help:\n \
 \n \
 Global Functions: \n \
 help(): Show this info\n \
-print([args]): print someting...\n \
-println([args]): print someting with enter... \n \
+print([args]): print something...\n \
+println([args]): print something with enter(s)... \n \
 welcome(): print welcome-info\n \
 det(Matrix): calculate matrix determinant \n \
 \n \
@@ -146,11 +147,9 @@ Variable PrintLnFunc::run(const std::stack<Variable>& _args, Executer* parent)
 {
 	std::stack<Variable> args = _args;
 	if (args.empty())UI::PrintLog("\n");
-	bool first = true;
 	while (!args.empty())
 	{
-		if (!first) UI::PrintLog("\n");
-		first = false;
+		UI::PrintLog("\n");
 		UI::Print(args.top());
 		args.pop();
 	}
@@ -189,5 +188,26 @@ Variable EFunc::run(const std::stack<Variable>& _args, Executer* parent)
 		m->buffer[ib * k + ib] = 0;
 		m->buffer[ib * k + ia] = 1;
 	}
+	return var;
+}
+
+Variable TFunc::run(const std::stack<Variable>& _args, Executer* parent)
+{
+	std::stack<Variable> args = _args;
+	if (args.empty() || args.top().type != __Variable::_matrix) return Variable::err;
+	Matrix m = *((Matrix*)(args.top().value));
+	if (m.GetCol() != m.GetRow())return Variable::err;
+
+	for (int i = 0; i < m.GetCol(); ++i)
+	{
+		for (int j = i; j < m.GetRow(); ++j)
+		{
+			double temp = m[i][j];
+			m[i][j] = m[j][i];
+			m[j][i] = temp;
+		}
+	}
+	Variable var(__Variable::_matrix);
+	var.value = new Matrix(m);
 	return var;
 }

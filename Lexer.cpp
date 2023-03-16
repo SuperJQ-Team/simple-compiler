@@ -166,7 +166,7 @@ Automaton::CharType Automaton::getCharType(char c)
 	if (c == ')') return RightParen;
 	if (c == '{') return LeftFlowerParen;
 	if (c == '}') return RightFlowerParen;
-	if (c == '"') return Quotation;
+	if (c == '"' || c == '\'') return Quotation;
 	if (c == ',') return Comma;
 	if (c == ';') return Semicolon;
 	if (sign.find(c) != sign.end()) return Operator;
@@ -210,9 +210,12 @@ TokenType Automaton::getTokenType(State state, const Token& token)
 		if (token.value == ";")return TokenType::Semicolon;
 		return TokenType::Error;
 	}
-	if (state == Space)
-		return TokenType::End;
-	return TokenType::Error;
+	for (auto c : token.value)
+	{
+		if (c != ' ' && c != '\t' && c != '\n')
+			return TokenType::Error;
+	}
+	return TokenType::End;
 }
 
 Automaton::Automaton(const std::string& str)
@@ -224,6 +227,7 @@ Automaton::Automaton(const std::string& str)
 Token Automaton::GetNextToken()
 {
 	int lfpnum = 0;// number of left flower paren(s)
+	char last_c = '\0';
 	char quot_type = '\0';
 	State state = START, last_state = START;
 	Token token;
@@ -288,6 +292,7 @@ Token Automaton::GetNextToken()
 			state = state_trans[state][type];
 		}
 
+		last_c = c;
 		if (state == END)
 		{
 			if (last_state != MATRIX && last_state != STRING) previous();
@@ -295,7 +300,9 @@ Token Automaton::GetNextToken()
 		}
 		if ((state == STRING && c != quot_type) || (state != STRING && !isspace(c))) token.value.push_back(c);
 		last_state = state;
+
 	}
+	if (last_state == STRING && last_c != quot_type)return Token::error;
 	token.type = getTokenType(last_state, token);
 	return token;
 }
