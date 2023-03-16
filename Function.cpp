@@ -49,7 +49,7 @@ void Function::RegisterGlobalFunc(Executer& executer)
 
 Variable WelcomeFunc::run(const std::stack<Variable>& args, Executer* parent)
 {
-	UI::PrintLog("Calculator v1.1. Licensed by GPL v4.0.\n\n");
+	UI::PrintLog("Calculator v2.0. Licensed by GPL v4.0.\n\n");
 	UI::PrintLog("Type \"help()\" for more info.\n");
 	return Variable::nul;
 }
