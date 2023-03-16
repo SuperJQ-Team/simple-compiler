@@ -77,6 +77,8 @@ print([args]): print something...\n \
 println([args]): print something with enter(s)... \n \
 welcome(): print welcome-info\n \
 det(Matrix): calculate matrix determinant \n \
+E(size,[row1,row2]): create an identity matrix, optional: exchange the incoming two rows \n \
+T(Matrix): transpose the matrix \n \
 \n \
 Keywords: \n \
 let VAR_NAME (= VALUE)*: define variable as VAR_NAME (and initialized as VALUE)\n \
