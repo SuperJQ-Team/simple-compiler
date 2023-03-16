@@ -49,7 +49,7 @@ void Function::RegisterGlobalFunc(Executer& executer)
 
 Variable WelcomeFunc::run(const std::stack<Variable>& args, Executer* parent)
 {
-	UI::PrintLog("Calculator v1.1. Licensed by GPL v4.0.\n\n");
+	UI::PrintLog("Calculator v2.0. Licensed by GPL v4.0.\n\n");
 	UI::PrintLog("Type \"help()\" for more info.\n");
 	return Variable::nul;
 }
@@ -77,6 +77,8 @@ print([args]): print something...\n \
 println([args]): print something with enter(s)... \n \
 welcome(): print welcome-info\n \
 det(Matrix): calculate matrix determinant \n \
+E(size,[row1,row2]): create an identity matrix, optional: exchange the incoming two rows \n \
+T(Matrix): transpose the matrix \n \
 \n \
 Keywords: \n \
 let VAR_NAME (= VALUE)*: define variable as VAR_NAME (and initialized as VALUE)\n \
