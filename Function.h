@@ -81,3 +81,9 @@ class EFunc : public Function
 public:
 	Variable run(const std::stack<Variable>& args, Executer* parent = nullptr);
 };
+
+class TFunc : public Function
+{
+public:
+	Variable run(const std::stack<Variable>& args, Executer* parent = nullptr);
+};

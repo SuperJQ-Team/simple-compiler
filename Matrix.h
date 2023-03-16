@@ -20,19 +20,22 @@ public:
 	Matrix(int row, int col);
 	Matrix(const Matrix&);
 	~Matrix();
-	
+
 	Matrix& operator = (const Matrix& m);
 
 	int GetRow() const { return row; }
 	int GetCol() const { return col; }
-	
+
 	friend Matrix operator * (const Matrix& ma, const Matrix& mb);
 	friend Matrix operator * (double k, const Matrix& m);
 	friend Matrix operator + (const Matrix& ma, const Matrix& mb);
 	friend Matrix operator - (const Matrix& ma, const Matrix& mb);
+	friend Matrix operator - (const Matrix& ma);
+
+	double* operator[] (int);
 
 	static friend void UI::Print(const Matrix& matrix);
-	
+
 	friend Variable DetFunc::run(const std::stack<Variable>& args, Executer* parent);
 	friend Variable EFunc::run(const std::stack<Variable>& args, Executer* parent);
 };
