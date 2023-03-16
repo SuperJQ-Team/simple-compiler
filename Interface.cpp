@@ -39,6 +39,7 @@ const char* __stdcall FileOpen(const char* file)
 {
 	stringstream ss;
 	UI::SetOS(ss);
+	Executer ext;
 	ifstream fin(file);
 	std::string s;
 	if (!fin)UI::PrintErr("cannot find file!\n");
