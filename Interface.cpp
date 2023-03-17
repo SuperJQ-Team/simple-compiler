@@ -22,6 +22,8 @@ const char* __stdcall LineInterpreter(const char* input)
 	UI::SetOS(ss);
 	vector<Token> tokens = Lexer::GetTokens(input);
 	ext.Execute(tokens);
+	if (UI::infunc)
+		UI::PrintLog("-");
 	if (ss.str().size() < 256)
 		strcpy(c, ss.str().c_str());
 	else
