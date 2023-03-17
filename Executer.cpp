@@ -179,9 +179,12 @@ Variable Executer::Calculate(const std::vector<Token>& tokens, int index)
 				{
 					if (opts.top().type == TokenType::Comma)
 					{
-						auto& x = GetValue(vars.top());
-						if (x.type == __Variable::_error)return Variable::err;
-						if (vars.top().type == __Variable::_varible)pam_stack.push(x);
+						if (vars.top().type == __Variable::_varible)
+						{
+							auto& x = GetValue(vars.top());
+							if (x.type == __Variable::_error)return Variable::err;
+							pam_stack.push(x);
+						}
 						else pam_stack.push(vars.top());
 						vars.pop();
 						opts.pop();
@@ -198,9 +201,12 @@ Variable Executer::Calculate(const std::vector<Token>& tokens, int index)
 				}
 				if (opts.top().type == TokenType::Function)
 				{
-					auto& x = GetValue(vars.top());
-					if (x.type == __Variable::_error)return Variable::err;
-					if (vars.top().type == __Variable::_varible)pam_stack.push(x);
+					if (vars.top().type == __Variable::_varible)
+					{
+						auto& x = GetValue(vars.top());
+						if (x.type == __Variable::_error)return Variable::err;
+						pam_stack.push(x);
+					}
 					else pam_stack.push(vars.top());
 					vars.pop();
 					vars.push(GetFunction(opts.top().value)->run(pam_stack, this));
